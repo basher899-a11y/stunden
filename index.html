@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#27ae60">
+    <title>K+S Stundenzettel</title>
+    
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIksrUyBTdHVuZGVuemV0dGVsIiwKICAic2hvcnRfbmFtZSI6ICJTdHVuZGVuemV0dGVsIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjMjdhZTYwIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLnBvc3RpbWcuY2MvODVtODhYNjYvbG9nby1zbWFsbC5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
+
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        @media print {
+            @page { size: A4; margin: 0; }
+            .no-print { display: none !important; }
+            .app-container { border: none !important; box-shadow: none !important; width: 210mm; height: 297mm; padding: 10mm 15mm; margin: 0; }
+        }
+
+        body { font-family: Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        
+        /* Mobile Steuerung */
+        .no-print { width: 100%; max-width: 210mm; display: flex; gap: 8px; margin-bottom: 10px; position: sticky; top: 0; z-index: 100; background: #cfd8dc; padding: 5px 0; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .btn-print { background: #27ae60; }
+        .btn-clear { background: #c0392b; }
+
+        .app-container { background: white; width: 210mm; min-height: 297mm; padding: 15mm; box-shadow: 0 0 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 10px; }
+        .logo img { width: 180px; height: auto; }
+        .title { text-align: right; }
+        .title h1 { margin: 0; font-size: 18px; text-transform: uppercase; }
+
+        .meta { display: flex; gap: 15px; margin-bottom: 20px; }
+        .field { border-bottom: 1px solid black; display: flex; flex: 1; align-items: baseline; }
+        .field label { font-weight: bold; margin-right: 8px; font-size: 13px; }
+        input { border: none; outline: none; font-size: 15px; width: 100%; padding: 4px; background: transparent; }
+
+        table { width: 100%; border-collapse: collapse; border: 1.5px solid black; table-layout: fixed; }
+        th { border: 1.5px solid black; background: #f0f0f0; padding: 8px; font-size: 11px; text-align: left; }
+        td { border: 1.5px solid black; height: 42px; padding: 0; }
+        td input { width: 100%; height: 100%; border: none; padding: 5px; font-size: 14px; }
+
+        .col-date { width: 95px; text-align: center; font-weight: bold; font-size: 12px; background: #f9f9f9; }
+        .col-hours { width: 60px; }
+        .total-row { background: #f0f0f0; font-weight: bold; }
+        
+        .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 20px; }
+        .sig-container { text-align: center; }
+        #sig-canvas { border: 1px dashed #ccc; background: #fff; cursor: crosshair; touch-action: none; }
+        .sig-box { border-top: 1px solid black; width: 250px; margin-top: 5px; font-size: 12px; }
+        .rev { font-size: 9px; color: #888; }
+
+        /* Optimierung für kleine Bildschirme in der App-Ansicht */
+        @media (max-width: 210mm) {
+            .app-container { width: 100%; height: auto; padding: 10px; }
+            .header .logo img { width: 140px; }
+            table { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <button class="btn-print" onclick="window.print()">ALS PDF SPEICHERN</button>
+    <button class="btn-clear" onclick="resetForm()">LEEREN</button>
+</div>
+
+<div class="app-container">
+    <div class="header">
+        <div class="logo">
+            <img src="https://i.postimg.cc/tJK4wWjn/logo-small.png" alt="Logo K+S">
+        </div>
+        <div class="title">
+            <h1>STUNDENNACHWEIS</h1>
+            <div style="font-size: 11px;">Maschinenbau -- wöchentlich</div>
+        </div>
+    </div>
+
+    <div class="meta">
+        <div class="field"><label>Name:</label><input type="text" id="nameField" value="Eierdanz"></div>
+        <div class="field" style="flex: 0.4;"><label>KW:</label><input type="text" id="kwField"></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="col-date">Datum</th>
+                <th style="width: 100px;">Projektnr.</th>
+                <th>Tätigkeit</th>
+                <th class="col-hours">Std.</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="3" style="text-align: right; padding-right: 15px; height: 35px;">GESAMTSTUNDEN:</td>
+                <td id="totalDisplay" style="text-align: center; font-size: 16px;">0,0</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="footer">
+        <div class="rev">Rev. 002 11.11.2023</div>
+        <div class="sig-container">
+            <canvas id="sig-canvas" width="250" height="90"></canvas>
+            <div class="sig-box">Unterschrift Mitarbeiter</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Service Worker für Offline-Nutzung registrieren
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            const cacheName = 'ks-stunden-v1';
+            self.addEventListener('install', e => {
+                e.waitUntil(caches.open(cacheName).then(cache => cache.addAll(['./'])));
+            });
+            self.addEventListener('fetch', e => {
+                e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+            });
+        `;
+        const blob = new Blob([swCode], {type: 'text/javascript'});
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl);
+    }
+
+    function init() {
+        const heute = new Date();
+        const start = new Date(heute);
+        const day = heute.getDay();
+        const diff = heute.getDate() - day + (day === 0 ? -6 : 1);
+        start.setDate(diff);
+
+        const d = new Date(Date.UTC(heute.getFullYear(), heute.getMonth(), heute.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+        document.getElementById('kwField').value = Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = ""; 
+        for(let i=0; i<7; i++) {
+            let tag = new Date(start);
+            tag.setDate(start.getDate() + i);
+            tbody.innerHTML += `<tr>
+                <td class="col-date">${tag.toLocaleDateString('de-DE')}</td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="number" class="s-in" step="0.5" oninput="calc()"></td>
+            </tr>`;
+        }
+    }
+
+    function calc() {
+        let sum = 0;
+        document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0));
+        document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ',');
+    }
+
+    function resetForm() {
+        if(confirm("Alle Daten löschen?")) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.querySelectorAll('td input').forEach(i => i.value = "");
+            calc();
+        }
+    }
+
+    // Unterschrift Logik
+    const canvas = document.getElementById('sig-canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    ctx.lineWidth = 2;
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+    window.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); });
+    canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); });
+
+    window.onload = init;
+</script>
+</body>
+</html>
