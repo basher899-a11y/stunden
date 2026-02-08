@@ -22,7 +22,6 @@
             --border: #000;
         }
 
-        /* Dark Mode */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-body: #1a1a1a;
@@ -39,85 +38,86 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background: var(--bg-body);
+        }
+
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
-            background: var(--bg-body); 
-            margin: 0; 
-            padding: 10px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            color: var(--text-main); 
+            color: var(--text-main);
         }
 
-        /* Container & Layout */
+        /* App-Container FIX: Nutzt volle Breite auf Mobilgeräten */
         .app-container { 
             background: var(--bg-card); 
-            width: 148mm; 
+            width: 100%; /* Mobil: Volle Breite */
+            max-width: 148mm; /* PC/Druck: A5 Breite */
             min-height: 210mm; 
-            padding: 8mm; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            padding: 4mm; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
             display: flex; 
-            flex-direction: column; 
-            border-radius: 4px;
+            flex-direction: column;
+            margin: 0 auto;
         }
 
-        /* Header & Logo Fix */
+        /* Header & Logo */
         .header { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            margin-bottom: 15px; 
+            margin-bottom: 10px; 
             border-bottom: 2px solid var(--border); 
-            padding-bottom: 10px;
-            width: 100%;
+            padding-bottom: 5px;
         }
-        .logo { flex: 0 1 auto; max-width: 40%; display: flex; align-items: center; }
-        .logo img { width: 100%; max-width: 120px; height: auto; object-fit: contain; display: block; }
+        .logo { flex: 0 1 30%; }
+        .logo img { width: 100%; max-width: 100px; height: auto; object-fit: contain; }
         .title { flex: 1; text-align: right; }
-        .title h1 { margin: 0; font-size: 16px; text-transform: uppercase; }
+        .title h1 { margin: 0; font-size: 14px; text-transform: uppercase; }
 
-        /* Meta Felder */
-        .meta { display: flex; gap: 15px; margin-bottom: 15px; }
+        /* Buttons */
+        .no-print { width: 100%; max-width: 148mm; display: flex; gap: 5px; padding: 10px; }
+        .btn-main { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 12px; }
+        .btn-print { background: var(--primary); }
+        .btn-clear { background: #c0392b; }
+
+        /* Meta & Tabelle */
+        .meta { display: flex; gap: 10px; margin-bottom: 10px; }
         .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
-        .field label { font-weight: bold; margin-right: 8px; font-size: 11px; text-transform: uppercase; }
-        input { border: none; outline: none; font-size: 13px; width: 100%; padding: 3px; background: transparent; }
+        .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
+        input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
 
-        /* Tabelle */
         table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
-        th { border: 1px solid var(--border); background: #eceff1; padding: 6px; font-size: 10px; color: black; }
-        td { border: 1px solid var(--border); height: 32px; padding: 0; }
+        th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
+        td { border: 1px solid var(--border); height: 32px; padding: 0; overflow: hidden; }
         
-        .col-date { width: 110px; text-align: center; font-weight: bold; font-size: 11px; background: #f9f9f9; color: black; }
+        .col-date { width: 85px; text-align: center; font-weight: bold; font-size: 9px; background: #f9f9f9; color: black; }
         .weekend { background: #f1f1f1 !important; }
         
-        /* Buttons */
-        .no-print { width: 100%; max-width: 148mm; display: flex; gap: 8px; margin-bottom: 10px; }
-        .btn-main { flex: 1; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 13px; }
-        .btn-print { background: var(--primary); box-shadow: 0 4px #1e8449; }
-        .btn-clear { background: #c0392b; box-shadow: 0 4px #922b21; }
-        
-        .btn-row-add { background: #3498db; color: white; border-radius: 4px; width: 26px; height: 26px; border: none; font-size: 18px; cursor: pointer; margin-left: 4px; vertical-align: middle; }
-        .btn-row-del { background: #e74c3c; color: white; border-radius: 4px; width: 26px; height: 26px; border: none; font-size: 14px; margin-left: 4px; cursor: pointer; vertical-align: middle; }
+        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 20px; height: 20px; border: none; font-size: 14px; cursor: pointer; }
+        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 20px; height: 20px; border: none; font-size: 10px; margin-left: 2px; }
 
-        /* Status Farben */
         .overtime-8 { color: #f39c12 !important; font-weight: bold; }
         .overtime-10 { color: #e74c3c !important; font-weight: bold; }
-
         .total-row { background: #eceff1; font-weight: bold; color: black; }
-        #totalDisplay { font-size: 16px; text-align: center; }
+        #totalDisplay { font-size: 13px; text-align: center; }
 
-        /* Footer & Unterschrift */
-        .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 15px; }
-        #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; }
-        .sig-box { border-top: 1px solid var(--border); width: 180px; margin-top: 5px; font-size: 10px; text-align: center; font-weight: bold; }
+        /* Footer */
+        .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
+        #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 140px; }
+        .sig-box { border-top: 1px solid var(--border); width: 140px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
 
         @media print {
             @page { size: A5; margin: 0; }
             .no-print, .btn-row-add, .btn-row-del { display: none !important; }
-            .app-container { border: none !important; box-shadow: none !important; width: 148mm; height: 210mm; padding: 6mm; margin: 0; background: white !important; color: black !important; }
-            body { background: white; padding: 0; }
-            input { color: black !important; }
+            .app-container { width: 148mm !important; height: 210mm; padding: 8mm; background: white !important; color: black !important; border: none !important; box-shadow: none !important; }
             th, .col-date, .total-row { background: #eee !important; color: black !important; }
         }
     </style>
@@ -144,22 +144,22 @@
         <thead>
             <tr>
                 <th class="col-date">Datum</th>
-                <th style="width: 60px;">Proj.</th>
+                <th style="width: 50px;">Proj.</th>
                 <th>Tätigkeit</th>
-                <th style="width: 50px;">Std.</th>
+                <th style="width: 40px;">Std.</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
         <tfoot>
             <tr class="total-row">
-                <td colspan="3" style="text-align: right; padding-right: 15px; font-size: 11px;">GESAMTSTUNDEN:</td>
+                <td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td>
                 <td id="totalDisplay">0,0</td>
             </tr>
         </tfoot>
     </table>
 
     <div class="footer">
-        <div style="font-size: 8px; color: #999;">Rev. 016 | K+S Professional</div>
+        <div style="font-size: 7px; color: #999;">Rev. 018 | Full-Width Fix</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -168,7 +168,6 @@
 </div>
 
 <script>
-    // Service Worker für PWA (Android Fullscreen Fix)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `self.addEventListener('install', e => self.skipWaiting()); self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));`;
@@ -190,8 +189,7 @@
             tbody.innerHTML = ""; 
             for(let i=0; i<7; i++) {
                 let t = new Date(s); t.setDate(s.getDate() + i);
-                const isWeekend = (t.getDay() === 0 || t.getDay() === 6);
-                addRow(t.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}), null, isWeekend, false);
+                addRow(t.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}), null, (t.getDay() === 0 || t.getDay() === 6), false);
             }
         }
         calc();
@@ -201,10 +199,7 @@
         const tr = document.createElement('tr');
         if(isWeekend) tr.classList.add('weekend');
         tr.innerHTML = `
-            <td class="col-date">${dateStr} 
-                <button class="btn-row-add no-print" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>
-                ${isExtra ? `<button class="btn-row-del no-print" onclick="removeRow(this)">✕</button>` : ''}
-            </td>
+            <td class="col-date">${dateStr}<button class="btn-row-add no-print" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>${isExtra ? `<button class="btn-row-del no-print" onclick="removeRow(this)">✕</button>` : ''}</td>
             <td><input type="text" class="in-proj" oninput="saveAll()"></td>
             <td><input type="text" class="in-task" oninput="saveAll()"></td>
             <td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="handleStunden(this)"></td>
@@ -232,7 +227,7 @@
         const rows = [];
         document.querySelectorAll('#tableBody tr').forEach(tr => {
             rows.push({
-                date: tr.querySelector('.col-date').innerText.split(' ')[0],
+                date: tr.querySelector('.col-date').innerText.split('(')[0].trim().substring(0,5),
                 proj: tr.querySelector('.in-proj').value,
                 task: tr.querySelector('.in-task').value,
                 std: tr.querySelector('.s-in').value,
@@ -262,27 +257,18 @@
     }
 
     function printWithTitle() {
-        const n = document.getElementById('nameField').value || "Mitarbeiter";
-        const k = document.getElementById('kwField').value || "00";
-        const t = document.title;
-        document.title = `Stundenzettel_KW${k}_${n}`;
-        window.print();
-        document.title = t;
+        const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title;
+        document.title = `Stundenzettel_KW${k}_${n}`; window.print(); document.title = t;
     }
 
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
 
     function resetForm() {
-        if(confirm("Alle Daten inklusive Unterschrift löschen?")) {
-            localStorage.clear();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            init();
-        }
+        if(confirm("Daten löschen?")) { localStorage.clear(); ctx.clearRect(0, 0, canvas.width, canvas.height); init(); }
     }
 
-    // Unterschrift Logik
     const canvas = document.getElementById('sig-canvas'), ctx = canvas.getContext('2d');
-    let drawing = false; ctx.lineWidth = 2; ctx.strokeStyle = "#000";
+    let drawing = false; ctx.lineWidth = 2;
 
     function getPos(e) {
         const r = canvas.getBoundingClientRect();
@@ -301,4 +287,3 @@
 </script>
 </body>
 </html>
-
