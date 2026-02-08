@@ -35,6 +35,13 @@
         .meta { display: flex; gap: 10px; margin-bottom: 10px; }
         .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
         .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
+        
+        /* KW Steuerung */
+        .kw-control { display: flex; align-items: center; gap: 5px; }
+        .kw-btn { background: #eee; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; font-weight: bold; padding: 0 5px; font-size: 14px; }
+        .kw-btn:active { background: #ddd; }
+        @media (prefers-color-scheme: dark) { .kw-btn { background: #444; color: white; border-color: #666; } }
+
         input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
         table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
         th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
@@ -54,7 +61,7 @@
         .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
         @media print {
             @page { size: A5; margin: 0; }
-            .no-print, .btn-row-add, .btn-row-del { display: none !important; }
+            .no-print, .btn-row-add, .btn-row-del, .kw-btn { display: none !important; }
             .app-container { width: 148mm !important; height: 210mm; padding: 8mm; background: white !important; color: black !important; border: none !important; box-shadow: none !important; }
             th, .col-date, .total-row { background: #eee !important; color: black !important; }
         }
@@ -69,7 +76,14 @@
     </div>
     <div class="meta">
         <div class="field"><label>Name:</label><input type="text" id="nameField" oninput="saveAll()"></div>
-        <div class="field" style="flex: 0.3;"><label>KW:</label><input type="text" id="kwField" oninput="saveAll()"></div>
+        <div class="field" style="flex: 0.4;">
+            <label>KW:</label>
+            <div class="kw-control">
+                <button class="kw-btn no-print" onclick="changeWeek(-1)">&lt;</button>
+                <input type="number" id="kwField" oninput="saveAll()" style="width: 30px; text-align: center;">
+                <button class="kw-btn no-print" onclick="changeWeek(1)">&gt;</button>
+            </div>
+        </div>
     </div>
     <table>
         <thead><tr><th class="col-date">Datum</th><th style="width: 50px;">Proj.</th><th>Tätigkeit</th><th style="width: 45px;">Std.</th></tr></thead>
@@ -77,7 +91,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 022 | Date-Fix</div>
+        <div style="font-size: 7px; color: #999;">Rev. 023 | KW-Selector</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -86,6 +100,7 @@
 </div>
 <script>
     const tbody = document.getElementById('tableBody');
+    let currentMonday = new Date();
 
     function getWeekNumber(d) {
         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -94,24 +109,46 @@
         return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
 
+    function updateTableDates() {
+        const rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach((tr, i) => {
+            // Nur Basiszeilen (keine extra hinzugefügten Zeilen) updaten
+            if (!tr.querySelector('.btn-row-del')) {
+                let d = new Date(currentMonday);
+                d.setDate(currentMonday.getDate() + i);
+                tr.querySelector('.date-wrapper span').textContent = d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+            }
+        });
+        saveAll();
+    }
+
+    function changeWeek(delta) {
+        currentMonday.setDate(currentMonday.getDate() + (delta * 7));
+        document.getElementById('kwField').value = getWeekNumber(currentMonday);
+        // Wir müssen hier die Zeilen neu aufbauen, falls Überzeilen existieren
+        const r = JSON.parse(localStorage.getItem('ks_full_markup') || "[]");
+        tbody.innerHTML = "";
+        for(let i=0; i<7; i++) {
+            let d = new Date(currentMonday); d.setDate(currentMonday.getDate() + i);
+            addRow(d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}), null, (d.getDay() === 0 || d.getDay() === 6), false);
+        }
+        saveAll();
+    }
+
     function init() {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const diffToMonday = today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+        currentMonday = new Date(today.setDate(diffToMonday));
+
         if (localStorage.getItem('ks_full_markup')) { 
             loadAll(); 
         } else {
-            const today = new Date();
-            const dayOfWeek = today.getDay(); // 0 (So) bis 6 (Sa)
-            // Differenz zum Montag berechnen (Wenn heute So(0) ist, gehen wir 6 Tage zurück)
-            const diffToMonday = today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
-            const monday = new Date(today.setDate(diffToMonday));
-            
-            document.getElementById('kwField').value = getWeekNumber(monday);
-            
+            document.getElementById('kwField').value = getWeekNumber(currentMonday);
             tbody.innerHTML = ""; 
             for(let i=0; i<7; i++) {
-                let currentDay = new Date(monday);
-                currentDay.setDate(monday.getDate() + i);
-                const dateString = currentDay.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-                addRow(dateString, null, (currentDay.getDay() === 0 || currentDay.getDay() === 6), false);
+                let d = new Date(currentMonday); d.setDate(currentMonday.getDate() + i);
+                addRow(d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}), null, (d.getDay() === 0 || d.getDay() === 6), false);
             }
         }
         calc();
@@ -152,13 +189,18 @@
         const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
             rows.push({ date: tr.querySelector('.date-wrapper span').textContent, proj: tr.querySelector('.in-proj').value, task: tr.querySelector('.in-task').value, std: tr.querySelector('.s-in').value, isWeekend: tr.classList.contains('weekend'), isExtra: !!tr.querySelector('.btn-row-del') });
         });
-        localStorage.setItem('ks_full_markup', JSON.stringify(rows)); localStorage.setItem('ks_name', document.getElementById('nameField').value); localStorage.setItem('ks_kw', document.getElementById('kwField').value);
+        localStorage.setItem('ks_full_markup', JSON.stringify(rows)); 
+        localStorage.setItem('ks_name', document.getElementById('nameField').value); 
+        localStorage.setItem('ks_kw', document.getElementById('kwField').value);
+        localStorage.setItem('ks_monday', currentMonday.toISOString());
     }
 
     function loadAll() {
         const r = JSON.parse(localStorage.getItem('ks_full_markup')); 
         document.getElementById('nameField').value = localStorage.getItem('ks_name') || ''; 
         document.getElementById('kwField').value = localStorage.getItem('ks_kw') || '';
+        if(localStorage.getItem('ks_monday')) currentMonday = new Date(localStorage.getItem('ks_monday'));
+        
         tbody.innerHTML = ""; 
         r.forEach(data => { 
             addRow(data.date, null, data.isWeekend, data.isExtra); 
