@@ -3,170 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#27ae60">
-    
     <title>K+S Stundenzettel</title>
-
     <link rel="manifest" href='data:application/json;base64,ewogICJuYW1lIjogIksrUyBTdHVuZGVuemV0dGVsIiwKICAic2hvcnRfbmFtZSI6ICJTdHVuZGVuemV0dGVsIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjY2ZkOGRjIiwKICAidGhlbWVfY29sb3IiOiAiIzI3YWU2MCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vaS5wb3N0aW1nLmNjLzh1M001NjhRL2xvZ28tc3F1YXJlLXBhZGRlZC5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdCn0='>
-
     <style>
-        :root {
-            --primary: #27ae60;
-            --bg-body: #cfd8dc;
-            --bg-card: white;
-            --text-main: #333;
-            --border: #000;
-        }
-
+        :root { --primary: #27ae60; --bg-body: #cfd8dc; --bg-card: white; --text-main: #333; --border: #000; }
         @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-body: #1a1a1a;
-                --bg-card: #2c2c2c;
-                --text-main: #e0e0e0;
-                --border: #444;
-            }
+            :root { --bg-body: #1a1a1a; --bg-card: #2c2c2c; --text-main: #e0e0e0; --border: #444; }
             input { color: white !important; }
             th { background: #3d3d3d !important; color: white !important; }
             .col-date { background: #333 !important; color: #fff !important; }
             .weekend { background: #3d3d3d !important; }
             .total-row { background: #333 !important; color: white !important; }
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        html, body { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
-            background: var(--bg-body);
-        }
-
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            color: var(--text-main);
-        }
-
-        /* App-Container FIX: Nutzt volle Breite auf Mobilgeräten */
-        .app-container { 
-            background: var(--bg-card); 
-            width: 100%; /* Mobil: Volle Breite */
-            max-width: 148mm; /* PC/Druck: A5 Breite */
-            min-height: 210mm; 
-            padding: 4mm; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            display: flex; 
-            flex-direction: column;
-            margin: 0 auto;
-        }
-
-        /* Header & Logo */
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 10px; 
-            border-bottom: 2px solid var(--border); 
-            padding-bottom: 5px;
-        }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden; background: var(--bg-body); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
+        .app-container { background: var(--bg-card); width: 100%; max-width: 148mm; min-height: 210mm; padding: 4mm; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid var(--border); padding-bottom: 5px; }
         .logo { flex: 0 1 30%; }
-        .logo img { width: 100%; max-width: 100px; height: auto; object-fit: contain; }
+        .logo img { width: 100%; max-width: 90px; height: auto; object-fit: contain; display: block; }
         .title { flex: 1; text-align: right; }
-        .title h1 { margin: 0; font-size: 14px; text-transform: uppercase; }
-
-        /* Buttons */
+        .title h1 { margin: 0; font-size: 13px; text-transform: uppercase; }
         .no-print { width: 100%; max-width: 148mm; display: flex; gap: 5px; padding: 10px; }
         .btn-main { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 12px; }
         .btn-print { background: var(--primary); }
         .btn-clear { background: #c0392b; }
-
-        /* Meta & Tabelle */
         .meta { display: flex; gap: 10px; margin-bottom: 10px; }
         .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
         .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
         input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
-
         table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
         th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
-        td { border: 1px solid var(--border); height: 32px; padding: 0; overflow: hidden; }
-        
-        .col-date { width: 85px; text-align: center; font-weight: bold; font-size: 9px; background: #f9f9f9; color: black; }
+        td { border: 1px solid var(--border); height: 32px; padding: 0; overflow: hidden; position: relative; }
+        .col-date { width: 80px; text-align: left; padding-left: 4px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; white-space: nowrap; }
         .weekend { background: #f1f1f1 !important; }
-        
-        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 20px; height: 20px; border: none; font-size: 14px; cursor: pointer; }
-        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 20px; height: 20px; border: none; font-size: 10px; margin-left: 2px; }
-
+        .date-btns { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; }
+        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 18px; height: 18px; border: none; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 18px; height: 18px; border: none; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .overtime-8 { color: #f39c12 !important; font-weight: bold; }
         .overtime-10 { color: #e74c3c !important; font-weight: bold; }
         .total-row { background: #eceff1; font-weight: bold; color: black; }
         #totalDisplay { font-size: 13px; text-align: center; }
-
-        /* Footer */
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
-        #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 140px; }
-        .sig-box { border-top: 1px solid var(--border); width: 140px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
-
+        #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
+        .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
         @media print {
             @page { size: A5; margin: 0; }
-            .no-print, .btn-row-add, .btn-row-del { display: none !important; }
+            .no-print, .date-btns { display: none !important; }
             .app-container { width: 148mm !important; height: 210mm; padding: 8mm; background: white !important; color: black !important; border: none !important; box-shadow: none !important; }
             th, .col-date, .total-row { background: #eee !important; color: black !important; }
         }
     </style>
 </head>
 <body>
-
-<div class="no-print">
-    <button class="btn-main btn-print" onclick="printWithTitle()">PDF SPEICHERN</button>
-    <button class="btn-main btn-clear" onclick="resetForm()">LEEREN</button>
-</div>
-
+<div class="no-print"><button class="btn-main btn-print" onclick="printWithTitle()">PDF SPEICHERN</button><button class="btn-main btn-clear" onclick="resetForm()">LEEREN</button></div>
 <div class="app-container">
     <div class="header">
         <div class="logo"><img src="https://i.postimg.cc/tJK4wWjn/logo-small.png" alt="Logo K+S"></div>
         <div class="title"><h1>Stundennachweis</h1></div>
     </div>
-
     <div class="meta">
         <div class="field"><label>Name:</label><input type="text" id="nameField" oninput="saveAll()"></div>
         <div class="field" style="flex: 0.3;"><label>KW:</label><input type="text" id="kwField" oninput="saveAll()"></div>
     </div>
-
     <table>
-        <thead>
-            <tr>
-                <th class="col-date">Datum</th>
-                <th style="width: 50px;">Proj.</th>
-                <th>Tätigkeit</th>
-                <th style="width: 40px;">Std.</th>
-            </tr>
-        </thead>
+        <thead><tr><th class="col-date">Datum</th><th style="width: 50px;">Proj.</th><th>Tätigkeit</th><th style="width: 40px;">Std.</th></tr></thead>
         <tbody id="tableBody"></tbody>
-        <tfoot>
-            <tr class="total-row">
-                <td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td>
-                <td id="totalDisplay">0,0</td>
-            </tr>
-        </tfoot>
+        <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
-
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 018 | Full-Width Fix</div>
+        <div style="font-size: 7px; color: #999;">Rev. 019 | UI-Stabilized</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
         </div>
     </div>
 </div>
-
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -175,17 +91,13 @@
             navigator.serviceWorker.register(URL.createObjectURL(blob));
         });
     }
-
     const tbody = document.getElementById('tableBody');
-
     function init() {
-        if (localStorage.getItem('ks_full_markup')) {
-            loadAll();
-        } else {
+        if (localStorage.getItem('ks_full_markup')) { loadAll(); } 
+        else {
             const h = new Date(); const s = new Date(h); const d = h.getDay(); s.setDate(h.getDate() - d + (d === 0 ? -6 : 1));
             const wk = new Date(Date.UTC(h.getFullYear(), h.getMonth(), h.getDate())); wk.setUTCDate(wk.getUTCDate() + 4 - (wk.getUTCDay()||7));
             document.getElementById('kwField').value = Math.ceil((((wk - new Date(Date.UTC(wk.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
-            
             tbody.innerHTML = ""; 
             for(let i=0; i<7; i++) {
                 let t = new Date(s); t.setDate(s.getDate() + i);
@@ -194,95 +106,38 @@
         }
         calc();
     }
-
     function addRow(dateStr, btn, isWeekend, isExtra) {
         const tr = document.createElement('tr');
         if(isWeekend) tr.classList.add('weekend');
-        tr.innerHTML = `
-            <td class="col-date">${dateStr}<button class="btn-row-add no-print" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>${isExtra ? `<button class="btn-row-del no-print" onclick="removeRow(this)">✕</button>` : ''}</td>
-            <td><input type="text" class="in-proj" oninput="saveAll()"></td>
-            <td><input type="text" class="in-task" oninput="saveAll()"></td>
-            <td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="handleStunden(this)"></td>
-        `;
-        if (btn) btn.closest('tr').parentNode.insertBefore(tr, btn.closest('tr').nextSibling);
-        else tbody.appendChild(tr);
+        tr.innerHTML = `<td class="col-date">${dateStr}<div class="date-btns no-print"><button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}</div></td><td><input type="text" class="in-proj" oninput="saveAll()"></td><td><input type="text" class="in-task" oninput="saveAll()"></td><td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="handleStunden(this)"></td>`;
+        if (btn) btn.closest('tr').parentNode.insertBefore(tr, btn.closest('tr').nextSibling); else tbody.appendChild(tr);
     }
-
     function handleStunden(i) {
-        const v = parseFloat(i.value || 0);
-        i.classList.remove('overtime-8', 'overtime-10');
-        if(v > 10) i.classList.add('overtime-10');
-        else if(v > 8) i.classList.add('overtime-8');
-        calc();
-        saveAll();
+        const v = parseFloat(i.value || 0); i.classList.remove('overtime-8', 'overtime-10');
+        if(v > 10) i.classList.add('overtime-10'); else if(v > 8) i.classList.add('overtime-8');
+        calc(); saveAll();
     }
-
-    function calc() {
-        let sum = 0;
-        document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0));
-        document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ',');
-    }
-
+    function calc() { let sum = 0; document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0)); document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); }
     function saveAll() {
-        const rows = [];
-        document.querySelectorAll('#tableBody tr').forEach(tr => {
-            rows.push({
-                date: tr.querySelector('.col-date').innerText.split('(')[0].trim().substring(0,5),
-                proj: tr.querySelector('.in-proj').value,
-                task: tr.querySelector('.in-task').value,
-                std: tr.querySelector('.s-in').value,
-                isWeekend: tr.classList.contains('weekend'),
-                isExtra: !!tr.querySelector('.btn-row-del')
-            });
+        const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
+            rows.push({ date: tr.querySelector('.col-date').childNodes[0].textContent.trim(), proj: tr.querySelector('.in-proj').value, task: tr.querySelector('.in-task').value, std: tr.querySelector('.s-in').value, isWeekend: tr.classList.contains('weekend'), isExtra: !!tr.querySelector('.btn-row-del') });
         });
-        localStorage.setItem('ks_full_markup', JSON.stringify(rows));
-        localStorage.setItem('ks_name', document.getElementById('nameField').value);
-        localStorage.setItem('ks_kw', document.getElementById('kwField').value);
+        localStorage.setItem('ks_full_markup', JSON.stringify(rows)); localStorage.setItem('ks_name', document.getElementById('nameField').value); localStorage.setItem('ks_kw', document.getElementById('kwField').value);
     }
-
     function loadAll() {
-        const r = JSON.parse(localStorage.getItem('ks_full_markup'));
-        document.getElementById('nameField').value = localStorage.getItem('ks_name') || '';
-        document.getElementById('kwField').value = localStorage.getItem('ks_kw') || '';
-        tbody.innerHTML = "";
-        r.forEach(data => {
-            addRow(data.date, null, data.isWeekend, data.isExtra);
-            const tr = tbody.lastElementChild;
-            tr.querySelector('.in-proj').value = data.proj;
-            tr.querySelector('.in-task').value = data.task;
-            const sIn = tr.querySelector('.s-in');
-            sIn.value = data.std;
-            handleStunden(sIn);
-        });
+        const r = JSON.parse(localStorage.getItem('ks_full_markup')); document.getElementById('nameField').value = localStorage.getItem('ks_name') || ''; document.getElementById('kwField').value = localStorage.getItem('ks_kw') || '';
+        tbody.innerHTML = ""; r.forEach(data => { addRow(data.date, null, data.isWeekend, data.isExtra); const tr = tbody.lastElementChild; tr.querySelector('.in-proj').value = data.proj; tr.querySelector('.in-task').value = data.task; const sIn = tr.querySelector('.s-in'); sIn.value = data.std; handleStunden(sIn); });
     }
-
-    function printWithTitle() {
-        const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title;
-        document.title = `Stundenzettel_KW${k}_${n}`; window.print(); document.title = t;
-    }
-
+    function printWithTitle() { const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title; document.title = `Stundenzettel_KW${k}_${n}`; window.print(); document.title = t; }
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
-
-    function resetForm() {
-        if(confirm("Daten löschen?")) { localStorage.clear(); ctx.clearRect(0, 0, canvas.width, canvas.height); init(); }
-    }
-
-    const canvas = document.getElementById('sig-canvas'), ctx = canvas.getContext('2d');
-    let drawing = false; ctx.lineWidth = 2;
-
-    function getPos(e) {
-        const r = canvas.getBoundingClientRect();
-        const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-        const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
-        return { x: clientX - r.left, y: clientY - r.top };
-    }
-
+    function resetForm() { if(confirm("Daten löschen?")) { localStorage.clear(); ctx.clearRect(0, 0, canvas.width, canvas.height); init(); } }
+    const canvas = document.getElementById('sig-canvas'), ctx = canvas.getContext('2d'); let drawing = false; ctx.lineWidth = 2;
+    function getPos(e) { const r = canvas.getBoundingClientRect(); const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX; const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY; return { x: clientX - r.left, y: clientY - r.top }; }
     canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
     canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
     window.addEventListener('mouseup', () => drawing = false);
     canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); });
     canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); });
-
     window.onload = init;
 </script>
 </body>
