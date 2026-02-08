@@ -77,7 +77,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 021 | KW-Fix</div>
+        <div style="font-size: 7px; color: #999;">Rev. 022 | Date-Fix</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -87,7 +87,6 @@
 <script>
     const tbody = document.getElementById('tableBody');
 
-    // Korrekte ISO-Wochenberechnung
     function getWeekNumber(d) {
         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
         d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -99,19 +98,20 @@
         if (localStorage.getItem('ks_full_markup')) { 
             loadAll(); 
         } else {
-            const now = new Date();
-            // Wochenanfang (Montag) finden
-            const day = now.getDay();
-            const diff = now.getDate() - day + (day == 0 ? -6 : 1);
-            const monday = new Date(now.setDate(diff));
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 (So) bis 6 (Sa)
+            // Differenz zum Montag berechnen (Wenn heute So(0) ist, gehen wir 6 Tage zurück)
+            const diffToMonday = today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+            const monday = new Date(today.setDate(diffToMonday));
             
             document.getElementById('kwField').value = getWeekNumber(monday);
             
             tbody.innerHTML = ""; 
             for(let i=0; i<7; i++) {
-                let t = new Date(monday);
-                t.setDate(monday.getDate() + i);
-                addRow(t.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}), null, (t.getDay() === 0 || t.getDay() === 6), false);
+                let currentDay = new Date(monday);
+                currentDay.setDate(monday.getDate() + i);
+                const dateString = currentDay.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+                addRow(dateString, null, (currentDay.getDay() === 0 || currentDay.getDay() === 6), false);
             }
         }
         calc();
@@ -142,7 +142,11 @@
         calc(); saveAll();
     }
 
-    function calc() { let sum = 0; document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0)); document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); }
+    function calc() { 
+        let sum = 0; 
+        document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0)); 
+        document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); 
+    }
     
     function saveAll() {
         const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
@@ -152,16 +156,46 @@
     }
 
     function loadAll() {
-        const r = JSON.parse(localStorage.getItem('ks_full_markup')); document.getElementById('nameField').value = localStorage.getItem('ks_name') || ''; document.getElementById('kwField').value = localStorage.getItem('ks_kw') || '';
-        tbody.innerHTML = ""; r.forEach(data => { addRow(data.date, null, data.isWeekend, data.isExtra); const tr = tbody.lastElementChild; tr.querySelector('.in-proj').value = data.proj; tr.querySelector('.in-task').value = data.task; const sIn = tr.querySelector('.s-in'); sIn.value = data.std; handleStunden(sIn); });
+        const r = JSON.parse(localStorage.getItem('ks_full_markup')); 
+        document.getElementById('nameField').value = localStorage.getItem('ks_name') || ''; 
+        document.getElementById('kwField').value = localStorage.getItem('ks_kw') || '';
+        tbody.innerHTML = ""; 
+        r.forEach(data => { 
+            addRow(data.date, null, data.isWeekend, data.isExtra); 
+            const tr = tbody.lastElementChild; 
+            tr.querySelector('.in-proj').value = data.proj; 
+            tr.querySelector('.in-task').value = data.task; 
+            const sIn = tr.querySelector('.s-in'); 
+            sIn.value = data.std; 
+            handleStunden(sIn); 
+        });
     }
 
-    function printWithTitle() { const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title; document.title = `Stundenzettel_KW${k}_${n}`; window.print(); document.title = t; }
+    function printWithTitle() { 
+        const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title; 
+        document.title = `Stundenzettel_KW${k}_${n}`; 
+        window.print(); 
+        document.title = t; 
+    }
+    
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
-    function resetForm() { if(confirm("Daten löschen?")) { localStorage.clear(); ctx.clearRect(0, 0, canvas.width, canvas.height); init(); } }
+    
+    function resetForm() { 
+        if(confirm("Daten löschen?")) { 
+            localStorage.clear(); 
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            init(); 
+        } 
+    }
 
-    const canvas = document.getElementById('sig-canvas'), ctx = canvas.getContext('2d'); let drawing = false; ctx.lineWidth = 2;
-    function getPos(e) { const r = canvas.getBoundingClientRect(); const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX; const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY; return { x: clientX - r.left, y: clientY - r.top }; }
+    const canvas = document.getElementById('sig-canvas'), ctx = canvas.getContext('2d'); 
+    let drawing = false; ctx.lineWidth = 2;
+    function getPos(e) { 
+        const r = canvas.getBoundingClientRect(); 
+        const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX; 
+        const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY; 
+        return { x: clientX - r.left, y: clientY - r.top }; 
+    }
     canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
     canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
     window.addEventListener('mouseup', () => drawing = false);
