@@ -36,24 +36,32 @@
         .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
         .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
         input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
+        
         table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
         th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
-        td { border: 1px solid var(--border); height: 32px; padding: 0; overflow: hidden; position: relative; }
-        .col-date { width: 80px; text-align: left; padding-left: 4px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; white-space: nowrap; }
+        td { border: 1px solid var(--border); height: 35px; padding: 0; position: relative; }
+        
+        /* Stabile Datums-Zelle */
+        .col-date { width: 85px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
+        .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; height: 100%; width: 100%; }
         .weekend { background: #f1f1f1 !important; }
-        .date-btns { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; }
-        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 18px; height: 18px; border: none; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 18px; height: 18px; border: none; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 2px; }
+
+        .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 12px; background: transparent; }
         .overtime-8 { color: #f39c12 !important; font-weight: bold; }
         .overtime-10 { color: #e74c3c !important; font-weight: bold; }
         .total-row { background: #eceff1; font-weight: bold; color: black; }
         #totalDisplay { font-size: 13px; text-align: center; }
+        
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
         #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
         .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
+        
         @media print {
             @page { size: A5; margin: 0; }
-            .no-print, .date-btns { display: none !important; }
+            .no-print, .btn-row-add, .btn-row-del { display: none !important; }
             .app-container { width: 148mm !important; height: 210mm; padding: 8mm; background: white !important; color: black !important; border: none !important; box-shadow: none !important; }
             th, .col-date, .total-row { background: #eee !important; color: black !important; }
         }
@@ -71,12 +79,12 @@
         <div class="field" style="flex: 0.3;"><label>KW:</label><input type="text" id="kwField" oninput="saveAll()"></div>
     </div>
     <table>
-        <thead><tr><th class="col-date">Datum</th><th style="width: 50px;">Proj.</th><th>Tätigkeit</th><th style="width: 40px;">Std.</th></tr></thead>
+        <thead><tr><th class="col-date">Datum</th><th style="width: 50px;">Proj.</th><th>Tätigkeit</th><th style="width: 45px;">Std.</th></tr></thead>
         <tbody id="tableBody"></tbody>
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 019 | UI-Stabilized</div>
+        <div style="font-size: 7px; color: #999;">Rev. 020 | Layout-Lock</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -109,7 +117,19 @@
     function addRow(dateStr, btn, isWeekend, isExtra) {
         const tr = document.createElement('tr');
         if(isWeekend) tr.classList.add('weekend');
-        tr.innerHTML = `<td class="col-date">${dateStr}<div class="date-btns no-print"><button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}</div></td><td><input type="text" class="in-proj" oninput="saveAll()"></td><td><input type="text" class="in-task" oninput="saveAll()"></td><td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="handleStunden(this)"></td>`;
+        tr.innerHTML = `
+            <td class="col-date">
+                <div class="date-wrapper">
+                    <span>${dateStr}</span>
+                    <div style="display:flex;" class="no-print">
+                        <button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>
+                        ${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}
+                    </div>
+                </div>
+            </td>
+            <td><input type="text" class="in-proj" oninput="saveAll()"></td>
+            <td><input type="text" class="in-task" oninput="saveAll()"></td>
+            <td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="handleStunden(this)"></td>`;
         if (btn) btn.closest('tr').parentNode.insertBefore(tr, btn.closest('tr').nextSibling); else tbody.appendChild(tr);
     }
     function handleStunden(i) {
@@ -120,7 +140,7 @@
     function calc() { let sum = 0; document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0)); document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); }
     function saveAll() {
         const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
-            rows.push({ date: tr.querySelector('.col-date').childNodes[0].textContent.trim(), proj: tr.querySelector('.in-proj').value, task: tr.querySelector('.in-task').value, std: tr.querySelector('.s-in').value, isWeekend: tr.classList.contains('weekend'), isExtra: !!tr.querySelector('.btn-row-del') });
+            rows.push({ date: tr.querySelector('.date-wrapper span').textContent, proj: tr.querySelector('.in-proj').value, task: tr.querySelector('.in-task').value, std: tr.querySelector('.s-in').value, isWeekend: tr.classList.contains('weekend'), isExtra: !!tr.querySelector('.btn-row-del') });
         });
         localStorage.setItem('ks_full_markup', JSON.stringify(rows)); localStorage.setItem('ks_name', document.getElementById('nameField').value); localStorage.setItem('ks_kw', document.getElementById('kwField').value);
     }
