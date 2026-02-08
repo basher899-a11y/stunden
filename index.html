@@ -36,29 +36,22 @@
         .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
         .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
         input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
-        
         table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
         th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
-        td { border: 1px solid var(--border); height: 35px; padding: 0; position: relative; }
-        
-        /* Stabile Datums-Zelle */
-        .col-date { width: 85px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
-        .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; height: 100%; width: 100%; }
+        td { border: 1px solid var(--border); height: 38px; padding: 0; position: relative; }
+        .col-date { width: 95px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
+        .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 5px; height: 100%; width: 100%; }
         .weekend { background: #f1f1f1 !important; }
-        
-        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 2px; }
-
-        .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 12px; background: transparent; }
+        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 3px; }
+        .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 13px; background: transparent; }
         .overtime-8 { color: #f39c12 !important; font-weight: bold; }
         .overtime-10 { color: #e74c3c !important; font-weight: bold; }
         .total-row { background: #eceff1; font-weight: bold; color: black; }
-        #totalDisplay { font-size: 13px; text-align: center; }
-        
+        #totalDisplay { font-size: 14px; text-align: center; }
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
         #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
         .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
-        
         @media print {
             @page { size: A5; margin: 0; }
             .no-print, .btn-row-add, .btn-row-del { display: none !important; }
@@ -84,7 +77,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 020 | Layout-Lock</div>
+        <div style="font-size: 7px; color: #999;">Rev. 021 | KW-Fix</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -92,28 +85,38 @@
     </div>
 </div>
 <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            const swCode = `self.addEventListener('install', e => self.skipWaiting()); self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));`;
-            const blob = new Blob([swCode], {type: 'text/javascript'});
-            navigator.serviceWorker.register(URL.createObjectURL(blob));
-        });
-    }
     const tbody = document.getElementById('tableBody');
+
+    // Korrekte ISO-Wochenberechnung
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
     function init() {
-        if (localStorage.getItem('ks_full_markup')) { loadAll(); } 
-        else {
-            const h = new Date(); const s = new Date(h); const d = h.getDay(); s.setDate(h.getDate() - d + (d === 0 ? -6 : 1));
-            const wk = new Date(Date.UTC(h.getFullYear(), h.getMonth(), h.getDate())); wk.setUTCDate(wk.getUTCDate() + 4 - (wk.getUTCDay()||7));
-            document.getElementById('kwField').value = Math.ceil((((wk - new Date(Date.UTC(wk.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
+        if (localStorage.getItem('ks_full_markup')) { 
+            loadAll(); 
+        } else {
+            const now = new Date();
+            // Wochenanfang (Montag) finden
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day == 0 ? -6 : 1);
+            const monday = new Date(now.setDate(diff));
+            
+            document.getElementById('kwField').value = getWeekNumber(monday);
+            
             tbody.innerHTML = ""; 
             for(let i=0; i<7; i++) {
-                let t = new Date(s); t.setDate(s.getDate() + i);
+                let t = new Date(monday);
+                t.setDate(monday.getDate() + i);
                 addRow(t.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}), null, (t.getDay() === 0 || t.getDay() === 6), false);
             }
         }
         calc();
     }
+
     function addRow(dateStr, btn, isWeekend, isExtra) {
         const tr = document.createElement('tr');
         if(isWeekend) tr.classList.add('weekend');
@@ -132,25 +135,31 @@
             <td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="handleStunden(this)"></td>`;
         if (btn) btn.closest('tr').parentNode.insertBefore(tr, btn.closest('tr').nextSibling); else tbody.appendChild(tr);
     }
+
     function handleStunden(i) {
         const v = parseFloat(i.value || 0); i.classList.remove('overtime-8', 'overtime-10');
         if(v > 10) i.classList.add('overtime-10'); else if(v > 8) i.classList.add('overtime-8');
         calc(); saveAll();
     }
+
     function calc() { let sum = 0; document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0)); document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); }
+    
     function saveAll() {
         const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
             rows.push({ date: tr.querySelector('.date-wrapper span').textContent, proj: tr.querySelector('.in-proj').value, task: tr.querySelector('.in-task').value, std: tr.querySelector('.s-in').value, isWeekend: tr.classList.contains('weekend'), isExtra: !!tr.querySelector('.btn-row-del') });
         });
         localStorage.setItem('ks_full_markup', JSON.stringify(rows)); localStorage.setItem('ks_name', document.getElementById('nameField').value); localStorage.setItem('ks_kw', document.getElementById('kwField').value);
     }
+
     function loadAll() {
         const r = JSON.parse(localStorage.getItem('ks_full_markup')); document.getElementById('nameField').value = localStorage.getItem('ks_name') || ''; document.getElementById('kwField').value = localStorage.getItem('ks_kw') || '';
         tbody.innerHTML = ""; r.forEach(data => { addRow(data.date, null, data.isWeekend, data.isExtra); const tr = tbody.lastElementChild; tr.querySelector('.in-proj').value = data.proj; tr.querySelector('.in-task').value = data.task; const sIn = tr.querySelector('.s-in'); sIn.value = data.std; handleStunden(sIn); });
     }
+
     function printWithTitle() { const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title; document.title = `Stundenzettel_KW${k}_${n}`; window.print(); document.title = t; }
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
     function resetForm() { if(confirm("Daten löschen?")) { localStorage.clear(); ctx.clearRect(0, 0, canvas.width, canvas.height); init(); } }
+
     const canvas = document.getElementById('sig-canvas'), ctx = canvas.getContext('2d'); let drawing = false; ctx.lineWidth = 2;
     function getPos(e) { const r = canvas.getBoundingClientRect(); const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX; const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY; return { x: clientX - r.left, y: clientY - r.top }; }
     canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
@@ -158,6 +167,7 @@
     window.addEventListener('mouseup', () => drawing = false);
     canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); });
     canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); });
+
     window.onload = init;
 </script>
 </body>
