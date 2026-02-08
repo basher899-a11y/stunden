@@ -28,9 +28,9 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
         .app-container { background: var(--bg-card); width: 100%; max-width: 148mm; min-height: 210mm; padding: 4mm; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid var(--border); padding-bottom: 5px; }
-        .logo { flex: 0 1 30%; }
-        /* Logo Styling optimiert für das quadratische Icon */
-        .logo img { width: 50px; height: 50px; object-fit: contain; display: block; border-radius: 4px; }
+        .logo { flex: 0 1 35%; }
+        /* Optimiertes Logo-Styling für den Zettel */
+        .logo img { width: auto; max-width: 120px; height: 50px; object-fit: contain; display: block; }
         .title { flex: 1; text-align: right; }
         .title h1 { margin: 0; font-size: 13px; text-transform: uppercase; }
         .no-print { width: 100%; max-width: 148mm; display: flex; gap: 5px; padding: 10px; }
@@ -75,7 +75,7 @@
 <div class="no-print"><button class="btn-main btn-print" onclick="printWithTitle()">PDF SPEICHERN</button><button class="btn-main btn-clear" onclick="resetForm()">LEEREN</button></div>
 <div class="app-container">
     <div class="header">
-        <div class="logo"><img src="android-icon-192x192.png" alt="Logo"></div>
+        <div class="logo"><img src="logo-small.png" alt="Logo K+S"></div>
         <div class="title"><h1>Stundennachweis</h1></div>
     </div>
     <div class="meta">
@@ -95,7 +95,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 025 | Final Release</div>
+        <div style="font-size: 7px; color: #999;">Rev. 025 | Logo-Update</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
