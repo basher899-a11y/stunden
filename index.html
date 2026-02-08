@@ -8,7 +8,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#27ae60">
     <title>K+S Stundenzettel</title>
-    <link rel="manifest" href='data:application/json;base64,ewogICJuYW1lIjogIksrUyBTdHVuZGVuemV0dGVsIiwKICAic2hvcnRfbmFtZSI6ICJTdHVuZGVuemV0dGVsIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjY2ZkOGRjIiwKICAidGhlbWVfY29sb3IiOiAiIzI3YWU2MCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vaS5wb3N0aW1nLmNjLzh1M001NjhRL2xvZ28tc3F1YXJlLXBhZGRlZC5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdCn0='>
+
+    <link rel="apple-touch-icon" href="android-icon-192x192.png">
+
+    <link rel="manifest" href='data:application/json;base64,ewogICJuYW1lIjogIksrUyBTdHVuZGVuemV0dGVsIiwKICAic2hvcnRfbmFtZSI6ICJTdHVuZGVuemV0dGVsIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjY2ZkOGRjIiwKICAidGhlbWVfY29sb3IiOiAiIzI3YWU2MCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImFuZHJvaWQtaWNvbi0xOTJ4MTkyLnBuZyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0KfQ=='>
+
     <style>
         :root { --primary: #27ae60; --bg-body: #cfd8dc; --bg-card: white; --text-main: #333; --border: #000; }
         @media (prefers-color-scheme: dark) {
@@ -36,10 +40,8 @@
         .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
         .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
         
-        /* KW Steuerung */
         .kw-control { display: flex; align-items: center; gap: 5px; }
-        .kw-btn { background: #eee; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; font-weight: bold; padding: 0 5px; font-size: 14px; }
-        .kw-btn:active { background: #ddd; }
+        .kw-btn { background: #eee; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; font-weight: bold; padding: 0 8px; font-size: 16px; height: 26px; display: flex; align-items: center; }
         @media (prefers-color-scheme: dark) { .kw-btn { background: #444; color: white; border-color: #666; } }
 
         input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
@@ -49,8 +51,8 @@
         .col-date { width: 95px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
         .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 5px; height: 100%; width: 100%; }
         .weekend { background: #f1f1f1 !important; }
-        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 3px; }
+        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 3px; }
         .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 13px; background: transparent; }
         .overtime-8 { color: #f39c12 !important; font-weight: bold; }
         .overtime-10 { color: #e74c3c !important; font-weight: bold; }
@@ -59,6 +61,7 @@
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
         #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
         .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
+        
         @media print {
             @page { size: A5; margin: 0; }
             .no-print, .btn-row-add, .btn-row-del, .kw-btn { display: none !important; }
@@ -71,7 +74,7 @@
 <div class="no-print"><button class="btn-main btn-print" onclick="printWithTitle()">PDF SPEICHERN</button><button class="btn-main btn-clear" onclick="resetForm()">LEEREN</button></div>
 <div class="app-container">
     <div class="header">
-        <div class="logo"><img src="https://i.postimg.cc/tJK4wWjn/logo-small.png" alt="Logo K+S"></div>
+        <div class="logo"><img src="logo.png" alt="Logo"></div>
         <div class="title"><h1>Stundennachweis</h1></div>
     </div>
     <div class="meta">
@@ -80,7 +83,7 @@
             <label>KW:</label>
             <div class="kw-control">
                 <button class="kw-btn no-print" onclick="changeWeek(-1)">&lt;</button>
-                <input type="number" id="kwField" oninput="saveAll()" style="width: 30px; text-align: center;">
+                <input type="number" id="kwField" oninput="saveAll()" style="width: 35px; text-align: center;">
                 <button class="kw-btn no-print" onclick="changeWeek(1)">&gt;</button>
             </div>
         </div>
@@ -91,7 +94,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 023 | KW-Selector</div>
+        <div style="font-size: 7px; color: #999;">Rev. 025 | Final Release</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -109,24 +112,9 @@
         return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
 
-    function updateTableDates() {
-        const rows = document.querySelectorAll('#tableBody tr');
-        rows.forEach((tr, i) => {
-            // Nur Basiszeilen (keine extra hinzugefügten Zeilen) updaten
-            if (!tr.querySelector('.btn-row-del')) {
-                let d = new Date(currentMonday);
-                d.setDate(currentMonday.getDate() + i);
-                tr.querySelector('.date-wrapper span').textContent = d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-            }
-        });
-        saveAll();
-    }
-
     function changeWeek(delta) {
         currentMonday.setDate(currentMonday.getDate() + (delta * 7));
         document.getElementById('kwField').value = getWeekNumber(currentMonday);
-        // Wir müssen hier die Zeilen neu aufbauen, falls Überzeilen existieren
-        const r = JSON.parse(localStorage.getItem('ks_full_markup') || "[]");
         tbody.innerHTML = "";
         for(let i=0; i<7; i++) {
             let d = new Date(currentMonday); d.setDate(currentMonday.getDate() + i);
@@ -136,14 +124,12 @@
     }
 
     function init() {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        const diffToMonday = today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
-        currentMonday = new Date(today.setDate(diffToMonday));
-
-        if (localStorage.getItem('ks_full_markup')) { 
-            loadAll(); 
-        } else {
+        if (localStorage.getItem('ks_full_markup')) { loadAll(); } 
+        else {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const diffToMonday = today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+            currentMonday = new Date(today.setDate(diffToMonday));
             document.getElementById('kwField').value = getWeekNumber(currentMonday);
             tbody.innerHTML = ""; 
             for(let i=0; i<7; i++) {
@@ -158,15 +144,7 @@
         const tr = document.createElement('tr');
         if(isWeekend) tr.classList.add('weekend');
         tr.innerHTML = `
-            <td class="col-date">
-                <div class="date-wrapper">
-                    <span>${dateStr}</span>
-                    <div style="display:flex;" class="no-print">
-                        <button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>
-                        ${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}
-                    </div>
-                </div>
-            </td>
+            <td class="col-date"><div class="date-wrapper"><span>${dateStr}</span><div style="display:flex;" class="no-print"><button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}</div></div></td>
             <td><input type="text" class="in-proj" oninput="saveAll()"></td>
             <td><input type="text" class="in-task" oninput="saveAll()"></td>
             <td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="handleStunden(this)"></td>`;
@@ -179,11 +157,7 @@
         calc(); saveAll();
     }
 
-    function calc() { 
-        let sum = 0; 
-        document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0)); 
-        document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); 
-    }
+    function calc() { let sum = 0; document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0)); document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); }
     
     function saveAll() {
         const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
@@ -200,44 +174,16 @@
         document.getElementById('nameField').value = localStorage.getItem('ks_name') || ''; 
         document.getElementById('kwField').value = localStorage.getItem('ks_kw') || '';
         if(localStorage.getItem('ks_monday')) currentMonday = new Date(localStorage.getItem('ks_monday'));
-        
-        tbody.innerHTML = ""; 
-        r.forEach(data => { 
-            addRow(data.date, null, data.isWeekend, data.isExtra); 
-            const tr = tbody.lastElementChild; 
-            tr.querySelector('.in-proj').value = data.proj; 
-            tr.querySelector('.in-task').value = data.task; 
-            const sIn = tr.querySelector('.s-in'); 
-            sIn.value = data.std; 
-            handleStunden(sIn); 
-        });
+        tbody.innerHTML = ""; r.forEach(data => { addRow(data.date, null, data.isWeekend, data.isExtra); const tr = tbody.lastElementChild; tr.querySelector('.in-proj').value = data.proj; tr.querySelector('.in-task').value = data.task; const sIn = tr.querySelector('.s-in'); sIn.value = data.std; handleStunden(sIn); });
     }
 
-    function printWithTitle() { 
-        const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title; 
-        document.title = `Stundenzettel_KW${k}_${n}`; 
-        window.print(); 
-        document.title = t; 
-    }
-    
+    function printWithTitle() { const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title; document.title = `Stundenzettel_KW${k}_${n}`; window.print(); document.title = t; }
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
-    
-    function resetForm() { 
-        if(confirm("Daten löschen?")) { 
-            localStorage.clear(); 
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            init(); 
-        } 
-    }
+    function resetForm() { if(confirm("Daten löschen?")) { localStorage.clear(); ctx.clearRect(0, 0, canvas.width, canvas.height); init(); } }
 
     const canvas = document.getElementById('sig-canvas'), ctx = canvas.getContext('2d'); 
     let drawing = false; ctx.lineWidth = 2;
-    function getPos(e) { 
-        const r = canvas.getBoundingClientRect(); 
-        const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX; 
-        const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY; 
-        return { x: clientX - r.left, y: clientY - r.top }; 
-    }
+    function getPos(e) { const r = canvas.getBoundingClientRect(); const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX; const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY; return { x: clientX - r.left, y: clientY - r.top }; }
     canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
     canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
     window.addEventListener('mouseup', () => drawing = false);
