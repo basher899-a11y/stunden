@@ -47,15 +47,17 @@
         .col-date { width: 95px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
         .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 5px; height: 100%; width: 100%; }
         .weekend { background: #f1f1f1 !important; }
-        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; cursor: pointer; }
-        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; margin-left: 3px; }
+        .action-btns { display: flex; gap: 2px; }
+        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; cursor: pointer; font-size: 14px; }
+        .btn-row-copy { background: #f39c12; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; cursor: pointer; font-size: 12px; }
+        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; font-size: 12px; }
         .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 13px; background: transparent; }
         .total-row { background: #eceff1; font-weight: bold; color: black; }
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
         #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
         .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
         @media print {
-            .no-print { display: none !important; }
+            .no-print, .btn-row-copy { display: none !important; }
             .app-container { box-shadow: none !important; border: none !important; width: 148mm !important; }
         }
     </style>
@@ -66,6 +68,9 @@
     <button class="btn-main btn-csv" onclick="exportCSV()">Excel Export</button>
     <button class="btn-main btn-clear" onclick="resetForm()">Leeren</button>
 </div>
+
+<datalist id="project-suggestions"></datalist>
+
 <div class="app-container">
     <div class="header">
         <div class="logo"><img src="logo-small.png" alt="Logo"></div>
@@ -88,7 +93,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 026 | Stable Version</div>
+        <div style="font-size: 7px; color: #999;">Rev. 028 | Projekt-Speicher & Kopieren</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -99,6 +104,25 @@
 <script>
     const tbody = document.getElementById('tableBody');
     let currentMonday = new Date();
+    let savedProjects = JSON.parse(localStorage.getItem('ks_projects') || "[]");
+
+    function updateProjectSuggestions() {
+        const list = document.getElementById('project-suggestions');
+        list.innerHTML = "";
+        savedProjects.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p;
+            list.appendChild(opt);
+        });
+    }
+
+    function saveProjectName(name) {
+        if(!name || savedProjects.includes(name)) return;
+        savedProjects.unshift(name);
+        if(savedProjects.length > 5) savedProjects.pop();
+        localStorage.setItem('ks_projects', JSON.stringify(savedProjects));
+        updateProjectSuggestions();
+    }
 
     function getWeekNumber(d) {
         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -122,11 +146,30 @@
         const tr = document.createElement('tr');
         if(isWeekend) tr.classList.add('weekend');
         tr.innerHTML = `
-            <td class="col-date"><div class="date-wrapper"><span>${dateStr}</span><div style="display:flex;" class="no-print"><button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}</div></div></td>
-            <td><input type="text" class="in-proj" oninput="saveAll()"></td>
+            <td class="col-date">
+                <div class="date-wrapper">
+                    <span>${dateStr}</span>
+                    <div class="action-btns no-print">
+                        <button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>
+                        <button class="btn-row-copy" onclick="copyRow(this)">📄</button>
+                        ${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}
+                    </div>
+                </div>
+            </td>
+            <td><input type="text" class="in-proj" list="project-suggestions" oninput="saveAll()" onblur="saveProjectName(this.value)"></td>
             <td><input type="text" class="in-task" oninput="saveAll()"></td>
             <td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="calc();saveAll()"></td>`;
         if (btn) btn.closest('tr').parentNode.insertBefore(tr, btn.closest('tr').nextSibling); else tbody.appendChild(tr);
+    }
+
+    function copyRow(btn) {
+        const currentTr = btn.closest('tr');
+        const nextTr = currentTr.nextElementSibling;
+        if(nextTr) {
+            nextTr.querySelector('.in-proj').value = currentTr.querySelector('.in-proj').value;
+            nextTr.querySelector('.in-task').value = currentTr.querySelector('.in-task').value;
+            saveAll();
+        }
     }
 
     function calc() { 
@@ -185,7 +228,10 @@
     canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); }, {passive: false});
     canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }, {passive: false});
 
-    window.onload = () => { if (localStorage.getItem('ks_full_markup')) { loadAll(); } else { changeWeek(0); } };
+    window.onload = () => { 
+        updateProjectSuggestions();
+        if (localStorage.getItem('ks_full_markup')) { loadAll(); } else { changeWeek(0); } 
+    };
 </script>
 </body>
 </html>
