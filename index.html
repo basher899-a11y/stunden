@@ -10,8 +10,7 @@
     <title>K+S Stundenzettel</title>
 
     <link rel="apple-touch-icon" href="android-icon-192x192.png">
-    <link rel="manifest" href='data:application/json;base64,ewogICJuYW1lIjogIksrUyBTdHVuZGVuemV0dGVsIiwKICAic2hvcnRfbmFtZSI6ICJTdHVuZGVuemV0dGVsIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjY2ZkOGRjIiwKICAidGhlbWVfY29sb3IiOiAiIzI3YWU2MCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImFuZHJvaWQtaWNvbi0xOTJ4MTkyLnBuZyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0KfQ=='>
-
+    
     <style>
         :root { --primary: #27ae60; --bg-body: #cfd8dc; --bg-card: white; --text-main: #333; --border: #000; }
         @media (prefers-color-scheme: dark) {
@@ -69,8 +68,6 @@
     <button class="btn-main btn-clear" onclick="resetForm()">Leeren</button>
 </div>
 
-<datalist id="project-suggestions"></datalist>
-
 <div class="app-container">
     <div class="header">
         <div class="logo"><img src="logo-small.png" alt="Logo"></div>
@@ -93,7 +90,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 028 | Projekt-Speicher & Kopieren</div>
+        <div style="font-size: 7px; color: #999;">Rev. 029 | Monday-Fix & No Dropdown</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -104,24 +101,13 @@
 <script>
     const tbody = document.getElementById('tableBody');
     let currentMonday = new Date();
-    let savedProjects = JSON.parse(localStorage.getItem('ks_projects') || "[]");
 
-    function updateProjectSuggestions() {
-        const list = document.getElementById('project-suggestions');
-        list.innerHTML = "";
-        savedProjects.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p;
-            list.appendChild(opt);
-        });
-    }
-
-    function saveProjectName(name) {
-        if(!name || savedProjects.includes(name)) return;
-        savedProjects.unshift(name);
-        if(savedProjects.length > 5) savedProjects.pop();
-        localStorage.setItem('ks_projects', JSON.stringify(savedProjects));
-        updateProjectSuggestions();
+    // Setzt das Datum auf den Montag der aktuellen Woche
+    function setToMonday(date) {
+        const day = date.getDay() || 7; 
+        if (day !== 1) date.setHours(-24 * (day - 1));
+        date.setHours(0,0,0,0);
+        return date;
     }
 
     function getWeekNumber(d) {
@@ -133,10 +119,12 @@
 
     function changeWeek(delta) {
         currentMonday.setDate(currentMonday.getDate() + (delta * 7));
+        currentMonday = setToMonday(new Date(currentMonday));
         document.getElementById('kwField').value = getWeekNumber(currentMonday);
         tbody.innerHTML = "";
         for(let i=0; i<7; i++) {
-            let d = new Date(currentMonday); d.setDate(currentMonday.getDate() + i);
+            let d = new Date(currentMonday); 
+            d.setDate(currentMonday.getDate() + i);
             addRow(d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}), null, (d.getDay() === 0 || d.getDay() === 6), false);
         }
         saveAll();
@@ -156,7 +144,7 @@
                     </div>
                 </div>
             </td>
-            <td><input type="text" class="in-proj" list="project-suggestions" oninput="saveAll()" onblur="saveProjectName(this.value)"></td>
+            <td><input type="text" class="in-proj" oninput="saveAll()"></td>
             <td><input type="text" class="in-task" oninput="saveAll()"></td>
             <td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="calc();saveAll()"></td>`;
         if (btn) btn.closest('tr').parentNode.insertBefore(tr, btn.closest('tr').nextSibling); else tbody.appendChild(tr);
@@ -229,8 +217,7 @@
     canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }, {passive: false});
 
     window.onload = () => { 
-        updateProjectSuggestions();
-        if (localStorage.getItem('ks_full_markup')) { loadAll(); } else { changeWeek(0); } 
+        if (localStorage.getItem('ks_full_markup')) { loadAll(); } else { currentMonday = setToMonday(new Date()); changeWeek(0); } 
     };
 </script>
 </body>
