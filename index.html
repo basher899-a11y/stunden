@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#27ae60">
-    <title>K+S Stundenzettel</title>
+    <title>Stundenzettel</title>
 
     <link rel="apple-touch-icon" href="android-icon-192x192.png">
     
@@ -20,7 +20,7 @@
                 --bg-card: #2c2c2c; 
                 --text-main: #e0e0e0; 
                 --border: #444; 
-                --bg-weekend: #252525; /* Deutlich dunkler im Dark Mode */
+                --bg-weekend: #252525; 
             }
             input { color: white !important; }
             th { background: #3d3d3d !important; color: white !important; }
@@ -84,7 +84,7 @@
 </head>
 <body>
 <div class="no-print">
-    <button class="btn-main btn-print" onclick="printWithTitle()">PDF</button>
+    <button class="btn-main btn-print" onclick="window.print()">PDF</button>
     <button class="btn-main btn-csv" onclick="exportCSV()">Excel Export</button>
     <button class="btn-main btn-clear" onclick="resetForm()">Leeren</button>
 </div>
@@ -95,12 +95,12 @@
         <div class="title"><h1>Stundennachweis</h1></div>
     </div>
     <div class="meta">
-        <div class="field"><label>Name:</label><input type="text" id="nameField" oninput="saveAll()"></div>
+        <div class="field"><label>Name:</label><input type="text" id="nameField" oninput="saveAll(); updateTitle();"></div>
         <div class="field" style="flex: 0.4;">
             <label>KW:</label>
             <div class="kw-control">
                 <button class="kw-btn no-print" onclick="changeWeek(-1)">&lt;</button>
-                <input type="number" id="kwField" oninput="saveAll()" style="width: 35px; text-align: center;">
+                <input type="number" id="kwField" oninput="saveAll(); updateTitle();" style="width: 35px; text-align: center;">
                 <button class="kw-btn no-print" onclick="changeWeek(1)">&gt;</button>
             </div>
         </div>
@@ -111,7 +111,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 031 | Dark-Style & PDF-AutoName</div>
+        <div style="font-size: 7px; color: #999;">Rev. 032 | Filename-Fix & Dark Weekend</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -122,6 +122,13 @@
 <script>
     const tbody = document.getElementById('tableBody');
     let currentMonday = new Date();
+
+    function updateTitle() {
+        const name = document.getElementById('nameField').value || "Mitarbeiter";
+        const kw = document.getElementById('kwField').value || "00";
+        // Wir setzen den Titel der Webseite direkt. Die meisten Browser nutzen diesen als Dateinamen beim PDF-Speichern.
+        document.title = `Stundenzettel_KW${kw}_${name.replace(/\s+/g, '_')}`;
+    }
 
     function setToMonday(date) {
         const day = date.getDay() || 7; 
@@ -147,6 +154,7 @@
             d.setDate(currentMonday.getDate() + i);
             addRow(d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}), null, (d.getDay() === 0 || d.getDay() === 6), false);
         }
+        updateTitle();
         saveAll();
     }
 
@@ -204,16 +212,6 @@
         link.click();
     }
 
-    // PDF Export mit intelligentem Dateinamen
-    function printWithTitle() {
-        const name = document.getElementById('nameField').value || "Mitarbeiter";
-        const kw = document.getElementById('kwField').value || "00";
-        const originalTitle = document.title;
-        document.title = `Stundenzettel_KW${kw}_${name.replace(/\s+/g, '_')}`;
-        window.print();
-        document.title = originalTitle;
-    }
-
     function saveAll() {
         const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
             rows.push({ date: tr.querySelector('.date-wrapper span').textContent, proj: tr.querySelector('.in-proj').value, task: tr.querySelector('.in-task').value, std: tr.querySelector('.s-in').value, isWeekend: tr.classList.contains('weekend'), isExtra: !!tr.querySelector('.btn-row-del') });
@@ -231,6 +229,7 @@
         if(localStorage.getItem('ks_monday')) currentMonday = new Date(localStorage.getItem('ks_monday'));
         tbody.innerHTML = ""; r.forEach(data => { addRow(data.date, null, data.isWeekend, data.isExtra); const tr = tbody.lastElementChild; tr.querySelector('.in-proj').value = data.proj; tr.querySelector('.in-task').value = data.task; tr.querySelector('.s-in').value = data.std; });
         calc();
+        updateTitle();
     }
 
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
