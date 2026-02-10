@@ -43,21 +43,27 @@
         table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
         th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
         td { border: 1px solid var(--border); height: 38px; padding: 0; position: relative; }
-        .col-date { width: 95px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
-        .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 5px; height: 100%; width: 100%; }
+        
+        /* Optimierte Spaltenbreite */
+        .col-date { width: 82px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
+        .col-proj { width: 55px !important; }
+        .col-std { width: 42px !important; }
+        
+        .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; height: 100%; width: 100%; }
         .weekend { background: #f1f1f1 !important; }
-        .action-btns { display: flex; gap: 2px; }
-        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; cursor: pointer; font-size: 14px; }
-        .btn-row-copy { background: #f39c12; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; cursor: pointer; font-size: 12px; }
-        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 22px; height: 22px; border: none; font-size: 12px; }
+        .action-btns { display: flex; gap: 1px; }
+        .btn-row-add { background: #3498db; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; cursor: pointer; font-size: 12px; line-height: 1; }
+        .btn-row-copy { background: #f39c12; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; cursor: pointer; font-size: 10px; line-height: 1; }
+        .btn-row-del { background: #e74c3c; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; font-size: 10px; line-height: 1; }
         .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 13px; background: transparent; }
         .total-row { background: #eceff1; font-weight: bold; color: black; }
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
         #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
         .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
         @media print {
-            .no-print, .btn-row-copy { display: none !important; }
+            .no-print, .btn-row-copy, .btn-row-add, .btn-row-del { display: none !important; }
             .app-container { box-shadow: none !important; border: none !important; width: 148mm !important; }
+            .col-date { width: 45px !important; } /* Im Druck noch schmaler ohne Buttons */
         }
     </style>
 </head>
@@ -85,12 +91,12 @@
         </div>
     </div>
     <table>
-        <thead><tr><th class="col-date">Datum</th><th style="width: 50px;">Proj.</th><th>Tätigkeit</th><th style="width: 45px;">Std.</th></tr></thead>
+        <thead><tr><th class="col-date">Datum</th><th class="col-proj">Proj.</th><th>Tätigkeit</th><th class="col-std">Std.</th></tr></thead>
         <tbody id="tableBody"></tbody>
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 029 | Monday-Fix & No Dropdown</div>
+        <div style="font-size: 7px; color: #999;">Rev. 030 | Slim Design & Monday-Fix</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -102,7 +108,6 @@
     const tbody = document.getElementById('tableBody');
     let currentMonday = new Date();
 
-    // Setzt das Datum auf den Montag der aktuellen Woche
     function setToMonday(date) {
         const day = date.getDay() || 7; 
         if (day !== 1) date.setHours(-24 * (day - 1));
@@ -138,15 +143,15 @@
                 <div class="date-wrapper">
                     <span>${dateStr}</span>
                     <div class="action-btns no-print">
-                        <button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>
-                        <button class="btn-row-copy" onclick="copyRow(this)">📄</button>
+                        <button class="btn-row-add" title="Zeile hinzufügen" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>
+                        <button class="btn-row-copy" title="Nach unten kopieren" onclick="copyRow(this)">📄</button>
                         ${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}
                     </div>
                 </div>
             </td>
-            <td><input type="text" class="in-proj" oninput="saveAll()"></td>
+            <td class="col-proj"><input type="text" class="in-proj" oninput="saveAll()"></td>
             <td><input type="text" class="in-task" oninput="saveAll()"></td>
-            <td><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="calc();saveAll()"></td>`;
+            <td class="col-std"><input type="number" class="s-in" step="0.5" inputmode="decimal" oninput="calc();saveAll()"></td>`;
         if (btn) btn.closest('tr').parentNode.insertBefore(tr, btn.closest('tr').nextSibling); else tbody.appendChild(tr);
     }
 
