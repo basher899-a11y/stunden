@@ -9,10 +9,9 @@
     <meta name="theme-color" content="#27ae60">
     <title>K+S Stundenzettel</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
     <link rel="apple-touch-icon" href="android-icon-192x192.png">
-    
+    <link rel="manifest" href='data:application/json;base64,ewogICJuYW1lIjogIksrUyBTdHVuZGVuemV0dGVsIiwKICAic2hvcnRfbmFtZSI6ICJTdHVuZGVuemV0dGVsIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjY2ZkOGRjIiwKICAidGhlbWVfY29sb3IiOiAiIzI3YWU2MCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImFuZHJvaWQtaWNvbi0xOTJ4MTkyLnBuZyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0KfQ=='>
+
     <style>
         :root { --primary: #27ae60; --bg-body: #cfd8dc; --bg-card: white; --text-main: #333; --border: #000; }
         @media (prefers-color-scheme: dark) {
@@ -26,58 +25,48 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden; background: var(--bg-body); }
         body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
-        
-        /* Der Bereich, der exportiert wird */
-        #capture-area { background: white; width: 148mm; min-height: 210mm; padding: 6mm; display: flex; flex-direction: column; margin: 0 auto; color: black; position: relative; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+        .app-container { background: var(--bg-card); width: 100%; max-width: 148mm; min-height: 210mm; padding: 4mm; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid var(--border); padding-bottom: 5px; }
         .logo img { width: auto; max-width: 120px; height: 50px; object-fit: contain; display: block; }
-        .title h1 { margin: 0; font-size: 13px; text-transform: uppercase; color: black; }
-        
-        .no-print { width: 100%; max-width: 148mm; display: flex; flex-wrap: wrap; gap: 5px; padding: 10px; z-index: 100; }
-        .btn-main { flex: 1; min-width: 80px; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 10px; text-transform: uppercase; }
+        .title h1 { margin: 0; font-size: 13px; text-transform: uppercase; }
+        .no-print { width: 100%; max-width: 148mm; display: flex; flex-wrap: wrap; gap: 5px; padding: 10px; }
+        .btn-main { flex: 1; min-width: 100px; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 11px; text-transform: uppercase; }
         .btn-print { background: var(--primary); }
-        .btn-pdf { background: #8e44ad; } /* Lila für den neuen PDF Download */
         .btn-csv { background: #2980b9; }
         .btn-clear { background: #c0392b; }
-        
         .meta { display: flex; gap: 10px; margin-bottom: 10px; }
-        .field { border-bottom: 1px solid #000; display: flex; flex: 1; align-items: baseline; }
-        .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; color: black; }
-        
+        .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
+        .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
         .kw-control { display: flex; align-items: center; gap: 5px; }
         .kw-btn { background: #eee; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; font-weight: bold; padding: 0 8px; font-size: 16px; height: 26px; }
-        
-        input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; color: black; }
-        table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; }
-        th { border: 1px solid #000; background: #eceff1; padding: 4px; font-size: 8px; color: black; }
-        td { border: 1px solid #000; height: 38px; padding: 0; position: relative; color: black; }
-        .col-date { width: 95px !important; font-weight: bold; font-size: 10px; background: #f9f9f9 !important; }
+        @media (prefers-color-scheme: dark) { .kw-btn { background: #444; color: white; border-color: #666; } }
+        input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
+        table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
+        th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
+        td { border: 1px solid var(--border); height: 38px; padding: 0; position: relative; }
+        .col-date { width: 95px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
         .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 5px; height: 100%; width: 100%; }
         .weekend { background: #f1f1f1 !important; }
-        .btn-row-add, .btn-row-del { border-radius: 3px; width: 22px; height: 22px; border: none; cursor: pointer; color: white; font-weight: bold; }
-        .btn-row-add { background: #3498db; }
-        .btn-row-del { background: #e74c3c; margin-left: 3px; }
-        .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 13px; background: transparent; color: black; }
-        .total-row { background: #eceff1 !important; font-weight: bold; color: black; }
-        
+        .btn-row-add { background: #3498db; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; cursor: pointer; }
+        .btn-row-del { background: #e74c3c; color: white; border-radius: 3px; width: 24px; height: 24px; border: none; margin-left: 3px; }
+        .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 13px; background: transparent; }
+        .total-row { background: #eceff1; font-weight: bold; color: black; }
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
         #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
-        .sig-box { border-top: 1px solid #000; width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; color: black; }
-        
-        @media print { .no-print { display: none !important; } body { background: white; } }
+        .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
+        @media print {
+            .no-print { display: none !important; }
+            .app-container { box-shadow: none !important; border: none !important; width: 148mm !important; }
+        }
     </style>
 </head>
 <body>
-
 <div class="no-print">
-    <button class="btn-main btn-print" onclick="window.print()">Drucken</button>
-    <button class="btn-main btn-pdf" onclick="exportPDF()">PDF Download</button>
-    <button class="btn-main btn-csv" onclick="exportCSV()">Excel CSV</button>
+    <button class="btn-main btn-print" onclick="printWithTitle()">PDF</button>
+    <button class="btn-main btn-csv" onclick="exportCSV()">Excel Export</button>
     <button class="btn-main btn-clear" onclick="resetForm()">Leeren</button>
 </div>
-
-<div id="capture-area">
+<div class="app-container">
     <div class="header">
         <div class="logo"><img src="logo-small.png" alt="Logo"></div>
         <div class="title"><h1>Stundennachweis</h1></div>
@@ -96,10 +85,10 @@
     <table>
         <thead><tr><th class="col-date">Datum</th><th style="width: 50px;">Proj.</th><th>Tätigkeit</th><th style="width: 45px;">Std.</th></tr></thead>
         <tbody id="tableBody"></tbody>
-        <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay" style="text-align:center;">0,0</td></tr></tfoot>
+        <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 027 | PDF-Engine Active</div>
+        <div style="font-size: 7px; color: #999;">Rev. 026 | Stable Version</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -146,25 +135,6 @@
         document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); 
     }
 
-    // --- NEU: PDF DIREKT EXPORT ---
-    function exportPDF() {
-        const name = document.getElementById('nameField').value || "Mitarbeiter";
-        const kw = document.getElementById('kwField').value || "00";
-        const element = document.getElementById('capture-area');
-        
-        const opt = {
-            margin:       0,
-            filename:     `Stundenzettel_KW${kw}_${name.replace(/\s+/g, '_')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
-        };
-
-        // Export starten
-        html2pdf().set(opt).from(element).save();
-    }
-
-    // CSV Export Funktion
     function exportCSV() {
         const name = document.getElementById('nameField').value || "Mitarbeiter";
         const kw = document.getElementById('kwField').value || "00";
@@ -202,6 +172,7 @@
         calc();
     }
 
+    function printWithTitle() { const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title; document.title = `Stundenzettel_KW${k}_${n}`; window.print(); document.title = t; }
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
     function resetForm() { if(confirm("Daten löschen?")) { localStorage.clear(); location.reload(); } }
 
