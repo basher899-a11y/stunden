@@ -12,58 +12,73 @@
     <link rel="apple-touch-icon" href="android-icon-192x192.png">
     
     <style>
-        :root { --primary: #27ae60; --bg-body: #cfd8dc; --bg-card: white; --text-main: #333; --border: #000; }
+        :root { --primary: #27ae60; --bg-body: #cfd8dc; --bg-card: white; --text-main: #333; --border: #000; --bg-weekend: #f1f1f1; }
+        
         @media (prefers-color-scheme: dark) {
-            :root { --bg-body: #1a1a1a; --bg-card: #2c2c2c; --text-main: #e0e0e0; --border: #444; }
+            :root { 
+                --bg-body: #1a1a1a; 
+                --bg-card: #2c2c2c; 
+                --text-main: #e0e0e0; 
+                --border: #444; 
+                --bg-weekend: #252525; /* Deutlich dunkler im Dark Mode */
+            }
             input { color: white !important; }
             th { background: #3d3d3d !important; color: white !important; }
             .col-date { background: #333 !important; color: #fff !important; }
-            .weekend { background: #3d3d3d !important; }
             .total-row { background: #333 !important; color: white !important; }
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden; background: var(--bg-body); }
         body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
         .app-container { background: var(--bg-card); width: 100%; max-width: 148mm; min-height: 210mm; padding: 4mm; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; margin: 0 auto; }
+        
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid var(--border); padding-bottom: 5px; }
         .logo img { width: auto; max-width: 120px; height: 50px; object-fit: contain; display: block; }
         .title h1 { margin: 0; font-size: 13px; text-transform: uppercase; }
+        
         .no-print { width: 100%; max-width: 148mm; display: flex; flex-wrap: wrap; gap: 5px; padding: 10px; }
         .btn-main { flex: 1; min-width: 100px; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 11px; text-transform: uppercase; }
         .btn-print { background: var(--primary); }
         .btn-csv { background: #2980b9; }
         .btn-clear { background: #c0392b; }
+        
         .meta { display: flex; gap: 10px; margin-bottom: 10px; }
         .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
         .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
+        
         .kw-control { display: flex; align-items: center; gap: 5px; }
         .kw-btn { background: #eee; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; font-weight: bold; padding: 0 8px; font-size: 16px; height: 26px; }
         @media (prefers-color-scheme: dark) { .kw-btn { background: #444; color: white; border-color: #666; } }
+        
         input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
         table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
         th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
         td { border: 1px solid var(--border); height: 38px; padding: 0; position: relative; }
         
-        /* Optimierte Spaltenbreite */
         .col-date { width: 82px !important; font-weight: bold; font-size: 10px; background: #f9f9f9; color: black; }
         .col-proj { width: 55px !important; }
         .col-std { width: 42px !important; }
         
         .date-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; height: 100%; width: 100%; }
-        .weekend { background: #f1f1f1 !important; }
+        .weekend { background: var(--bg-weekend) !important; }
+        
         .action-btns { display: flex; gap: 1px; }
         .btn-row-add { background: #3498db; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; cursor: pointer; font-size: 12px; line-height: 1; }
         .btn-row-copy { background: #f39c12; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; cursor: pointer; font-size: 10px; line-height: 1; }
         .btn-row-del { background: #e74c3c; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; font-size: 10px; line-height: 1; }
+        
         .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 13px; background: transparent; }
         .total-row { background: #eceff1; font-weight: bold; color: black; }
+        
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
         #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
         .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
+
         @media print {
             .no-print, .btn-row-copy, .btn-row-add, .btn-row-del { display: none !important; }
             .app-container { box-shadow: none !important; border: none !important; width: 148mm !important; }
-            .col-date { width: 45px !important; } /* Im Druck noch schmaler ohne Buttons */
+            .col-date { width: 45px !important; }
         }
     </style>
 </head>
@@ -96,7 +111,7 @@
         <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 030 | Slim Design & Monday-Fix</div>
+        <div style="font-size: 7px; color: #999;">Rev. 031 | Dark-Style & PDF-AutoName</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -143,8 +158,8 @@
                 <div class="date-wrapper">
                     <span>${dateStr}</span>
                     <div class="action-btns no-print">
-                        <button class="btn-row-add" title="Zeile hinzufügen" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>
-                        <button class="btn-row-copy" title="Nach unten kopieren" onclick="copyRow(this)">📄</button>
+                        <button class="btn-row-add" onclick="addRow('${dateStr}', this, ${isWeekend}, true)">+</button>
+                        <button class="btn-row-copy" onclick="copyRow(this)">📄</button>
                         ${isExtra ? `<button class="btn-row-del" onclick="removeRow(this)">✕</button>` : ''}
                     </div>
                 </div>
@@ -189,6 +204,16 @@
         link.click();
     }
 
+    // PDF Export mit intelligentem Dateinamen
+    function printWithTitle() {
+        const name = document.getElementById('nameField').value || "Mitarbeiter";
+        const kw = document.getElementById('kwField').value || "00";
+        const originalTitle = document.title;
+        document.title = `Stundenzettel_KW${kw}_${name.replace(/\s+/g, '_')}`;
+        window.print();
+        document.title = originalTitle;
+    }
+
     function saveAll() {
         const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
             rows.push({ date: tr.querySelector('.date-wrapper span').textContent, proj: tr.querySelector('.in-proj').value, task: tr.querySelector('.in-task').value, std: tr.querySelector('.s-in').value, isWeekend: tr.classList.contains('weekend'), isExtra: !!tr.querySelector('.btn-row-del') });
@@ -208,7 +233,6 @@
         calc();
     }
 
-    function printWithTitle() { const n = document.getElementById('nameField').value || "Mitarbeiter", k = document.getElementById('kwField').value || "00", t = document.title; document.title = `Stundenzettel_KW${k}_${n}`; window.print(); document.title = t; }
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
     function resetForm() { if(confirm("Daten löschen?")) { localStorage.clear(); location.reload(); } }
 
