@@ -44,7 +44,7 @@
         .btn-main { flex: 1; min-width: 100px; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 11px; text-transform: uppercase; transition: opacity 0.2s; }
         .btn-main:active { opacity: 0.7; }
         .btn-print { background: var(--primary); }
-        .btn-csv { background: #2980b9; }
+        .btn-share { background: #8e44ad; } /* Neues Violett für den Teilen-Button */
         .btn-clear { background: #c0392b; }
         
         /* Formularfelder */
@@ -110,9 +110,8 @@
 <body>
 
 <div class="no-print">
-    <button class="btn-main btn-print" onclick="downloadPDF()">PDF Download</button>
-    <button class="btn-main btn-csv" onclick="exportCSV()">Excel Export</button>
-    <button class="btn-main btn-clear" onclick="resetForm()">Leeren</button>
+    <button class="btn-main btn-print" onclick="downloadPDF()">Speichern</button>
+    <button class="btn-main btn-share" onclick="sharePDF()">Teilen</button> <button class="btn-main btn-clear" onclick="resetForm()">Leeren</button>
 </div>
 
 <div class="app-container" id="capture-area">
@@ -149,7 +148,7 @@
         </tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 034 | PDF-Download & Light-Mode-Fix</div>
+        <div style="font-size: 7px; color: #999;">Rev. 035 | Share-API Integration</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -162,7 +161,7 @@
     const tbody = document.getElementById('tableBody');
     let currentMonday = new Date();
 
-    // Funktion für den PDF Download via html2pdf
+    // Funktion für den PDF Download
     function downloadPDF() {
         const element = document.getElementById('capture-area');
         const name = document.getElementById('nameField').value || "Mitarbeiter";
@@ -177,18 +176,65 @@
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // UI-Elemente für den PDF-Snap ausblenden
         const extras = document.querySelectorAll('.no-print, .btn-row-add, .btn-row-copy, .btn-row-del');
         extras.forEach(el => el.style.visibility = 'hidden');
-
-        // Light-Mode für PDF erzwingen
         element.classList.add('pdf-export-mode');
 
         html2pdf().set(opt).from(element).save().then(() => {
-            // UI wiederherstellen
             extras.forEach(el => el.style.visibility = 'visible');
             element.classList.remove('pdf-export-mode');
         });
+    }
+
+    // NEU: Funktion für das native Teilen via Web Share API
+    async function sharePDF() {
+        const element = document.getElementById('capture-area');
+        const name = document.getElementById('nameField').value || "Mitarbeiter";
+        const kw = document.getElementById('kwField').value || "00";
+        const filename = `Stundenzettel_KW${kw}_${name.replace(/\s+/g, '_')}.pdf`;
+
+        const opt = {
+            margin:       [10, 5, 10, 5],
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // UI verstecken und Light-Mode erzwingen
+        const extras = document.querySelectorAll('.no-print, .btn-row-add, .btn-row-copy, .btn-row-del');
+        extras.forEach(el => el.style.visibility = 'hidden');
+        element.classList.add('pdf-export-mode');
+
+        try {
+            // Generiert das PDF im Hintergrund als "Blob" (Datenpaket), statt es herunterzuladen
+            const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+            
+            // UI wiederherstellen
+            extras.forEach(el => el.style.visibility = 'visible');
+            element.classList.remove('pdf-export-mode');
+
+            // Mache eine echte Datei daraus
+            const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+            // Prüfe, ob das Gerät/der Browser Teilen unterstützt
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: filename,
+                    text: `Anbei mein Stundenzettel für KW${kw}.`
+                });
+            } else {
+                // Fallback: Wenn Teilen nicht geht (z.B. auf dem Desktop), lade es normal herunter
+                alert('Dein Browser unterstützt das direkte Teilen nicht. Das PDF wird stattdessen heruntergeladen.');
+                downloadPDF();
+            }
+        } catch (error) {
+            console.error('Fehler beim Generieren/Teilen des PDFs:', error);
+            // Sicherheits-Reset der UI
+            extras.forEach(el => el.style.visibility = 'visible');
+            element.classList.remove('pdf-export-mode');
+        }
     }
 
     function updateTitle() {
@@ -267,24 +313,6 @@
         let sum = 0; 
         document.querySelectorAll('.s-in').forEach(i => sum += parseFloat(i.value || 0)); 
         document.getElementById('totalDisplay').innerText = sum.toFixed(1).replace('.', ','); 
-    }
-
-    function exportCSV() {
-        const name = document.getElementById('nameField').value || "Mitarbeiter";
-        const kw = document.getElementById('kwField').value || "00";
-        let csvContent = "Datum;KW;Name;Projekt;Taetigkeit;Stunden\n";
-        document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const datum = tr.querySelector('.date-wrapper span').textContent;
-            const proj = tr.querySelector('.in-proj').value.replace(/;/g, ',');
-            const task = tr.querySelector('.in-task').value.replace(/;/g, ',');
-            const std = tr.querySelector('.s-in').value.replace('.', ',');
-            if(std && std !== "0") csvContent += `${datum};${kw};${name};${proj};${task};${std}\n`;
-        });
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Stundenzettel_KW${kw}_${name.replace(/\s+/g, '_')}.csv`;
-        link.click();
     }
 
     function saveAll() {
