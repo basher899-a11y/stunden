@@ -91,6 +91,20 @@
             .app-container { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; }
             input { border: none !important; background: transparent !important; }
         }
+
+        /* ERZWINGT LIGHT-MODE BEIM PDF-EXPORT */
+        .pdf-export-mode {
+            --bg-body: #cfd8dc !important;
+            --bg-card: white !important;
+            --text-main: #333 !important;
+            --border: #000 !important;
+            --bg-weekend: #f1f1f1 !important;
+            background-color: white !important;
+            color: #333 !important;
+        }
+        .pdf-export-mode input, .pdf-export-mode td { color: #333 !important; }
+        .pdf-export-mode th, .pdf-export-mode .total-row { background-color: #eceff1 !important; color: black !important; }
+        .pdf-export-mode .col-date { background-color: #f9f9f9 !important; color: black !important; }
     </style>
 </head>
 <body>
@@ -135,7 +149,7 @@
         </tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 033 | PDF-Direct-Download & Auto-Filename</div>
+        <div style="font-size: 7px; color: #999;">Rev. 034 | PDF-Download & Light-Mode-Fix</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
@@ -167,8 +181,13 @@
         const extras = document.querySelectorAll('.no-print, .btn-row-add, .btn-row-copy, .btn-row-del');
         extras.forEach(el => el.style.visibility = 'hidden');
 
+        // Light-Mode für PDF erzwingen
+        element.classList.add('pdf-export-mode');
+
         html2pdf().set(opt).from(element).save().then(() => {
+            // UI wiederherstellen
             extras.forEach(el => el.style.visibility = 'visible');
+            element.classList.remove('pdf-export-mode');
         });
     }
 
@@ -231,6 +250,11 @@
         const proj = currentTr.querySelector('.in-proj').value;
         const task = currentTr.querySelector('.in-task').value;
         let nextTr = currentTr.nextElementSibling;
+        
+        if (!nextTr) {
+            addRow(currentTr.querySelector('.date-wrapper span').textContent, null, false, true);
+            nextTr = tbody.lastElementChild;
+        }
         
         if(nextTr) {
             nextTr.querySelector('.in-proj').value = proj;
