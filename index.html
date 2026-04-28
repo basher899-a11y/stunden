@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#27ae60">
     <title>Stundenzettel</title>
 
-    <link rel="apple-touch-icon" href="android-icon-192x192.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         :root { --primary: #27ae60; --bg-body: #cfd8dc; --bg-card: white; --text-main: #333; --border: #000; --bg-weekend: #f1f1f1; }
@@ -31,18 +31,23 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden; background: var(--bg-body); }
         body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
-        .app-container { background: var(--bg-card); width: 100%; max-width: 148mm; min-height: 210mm; padding: 4mm; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; margin: 0 auto; }
+        
+        /* App Container */
+        .app-container { background: var(--bg-card); width: 100%; max-width: 148mm; min-height: 210mm; padding: 4mm; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; margin: 10px auto; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid var(--border); padding-bottom: 5px; }
         .logo img { width: auto; max-width: 120px; height: 50px; object-fit: contain; display: block; }
         .title h1 { margin: 0; font-size: 13px; text-transform: uppercase; }
         
-        .no-print { width: 100%; max-width: 148mm; display: flex; flex-wrap: wrap; gap: 5px; padding: 10px; }
-        .btn-main { flex: 1; min-width: 100px; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 11px; text-transform: uppercase; }
+        /* Buttons oben */
+        .no-print { width: 100%; max-width: 148mm; display: flex; flex-wrap: wrap; gap: 5px; padding: 10px; justify-content: center; }
+        .btn-main { flex: 1; min-width: 100px; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 11px; text-transform: uppercase; transition: opacity 0.2s; }
+        .btn-main:active { opacity: 0.7; }
         .btn-print { background: var(--primary); }
         .btn-csv { background: #2980b9; }
         .btn-clear { background: #c0392b; }
         
+        /* Formularfelder */
         .meta { display: flex; gap: 10px; margin-bottom: 10px; }
         .field { border-bottom: 1px solid var(--border); display: flex; flex: 1; align-items: baseline; }
         .field label { font-weight: bold; margin-right: 5px; font-size: 9px; text-transform: uppercase; }
@@ -52,6 +57,8 @@
         @media (prefers-color-scheme: dark) { .kw-btn { background: #444; color: white; border-color: #666; } }
         
         input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
+        
+        /* Tabelle */
         table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); table-layout: fixed; }
         th { border: 1px solid var(--border); background: #eceff1; padding: 4px; font-size: 8px; color: black; }
         td { border: 1px solid var(--border); height: 38px; padding: 0; position: relative; }
@@ -64,32 +71,37 @@
         .weekend { background: var(--bg-weekend) !important; }
         
         .action-btns { display: flex; gap: 1px; }
-        .btn-row-add { background: #3498db; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; cursor: pointer; font-size: 12px; line-height: 1; }
-        .btn-row-copy { background: #f39c12; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; cursor: pointer; font-size: 10px; line-height: 1; }
-        .btn-row-del { background: #e74c3c; color: white; border-radius: 2px; width: 18px; height: 18px; border: none; font-size: 10px; line-height: 1; }
+        .btn-row-add, .btn-row-copy, .btn-row-del { color: white; border-radius: 2px; width: 18px; height: 18px; border: none; cursor: pointer; font-size: 10px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+        .btn-row-add { background: #3498db; }
+        .btn-row-copy { background: #f39c12; }
+        .btn-row-del { background: #e74c3c; }
         
         .s-in { width: 100%; height: 100%; border: none; text-align: center; font-size: 13px; background: transparent; }
         .total-row { background: #eceff1; font-weight: bold; color: black; }
         
+        /* Footer & Signatur */
         .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; }
         #sig-canvas { border: 1px dashed #bbb; background: #fff; touch-action: none; border-radius: 4px; max-width: 130px; }
         .sig-box { border-top: 1px solid var(--border); width: 130px; margin-top: 5px; font-size: 8px; text-align: center; font-weight: bold; }
 
+        /* PRINT / PDF OPTIMIERUNG */
         @media print {
-            .no-print, .btn-row-copy, .btn-row-add, .btn-row-del { display: none !important; }
-            .app-container { box-shadow: none !important; border: none !important; width: 148mm !important; }
-            .col-date { width: 45px !important; }
+            .no-print, .btn-row-copy, .btn-row-add, .btn-row-del, .kw-btn { display: none !important; }
+            body { background: white; }
+            .app-container { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; }
+            input { border: none !important; background: transparent !important; }
         }
     </style>
 </head>
 <body>
+
 <div class="no-print">
-    <button class="btn-main btn-print" onclick="window.print()">PDF</button>
+    <button class="btn-main btn-print" onclick="downloadPDF()">PDF Download</button>
     <button class="btn-main btn-csv" onclick="exportCSV()">Excel Export</button>
     <button class="btn-main btn-clear" onclick="resetForm()">Leeren</button>
 </div>
 
-<div class="app-container">
+<div class="app-container" id="capture-area">
     <div class="header">
         <div class="logo"><img src="logo-small.png" alt="Logo"></div>
         <div class="title"><h1>Stundennachweis</h1></div>
@@ -106,15 +118,28 @@
         </div>
     </div>
     <table>
-        <thead><tr><th class="col-date">Datum</th><th class="col-proj">Proj.</th><th>Tätigkeit</th><th class="col-std">Std.</th></tr></thead>
+        <thead>
+            <tr>
+                <th class="col-date">Datum</th>
+                <th class="col-proj">Proj.</th>
+                <th>Tätigkeit</th>
+                <th class="col-std">Std.</th>
+            </tr>
+        </thead>
         <tbody id="tableBody"></tbody>
-        <tfoot><tr class="total-row"><td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td><td id="totalDisplay">0,0</td></tr></tfoot>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="3" style="text-align: right; padding-right: 10px; font-size: 9px;">GESAMT:</td>
+                <td id="totalDisplay">0,0</td>
+            </tr>
+        </tfoot>
     </table>
     <div class="footer">
-        <div style="font-size: 7px; color: #999;">Rev. 032 | Filename-Fix & Dark Weekend</div>
+        <div style="font-size: 7px; color: #999;">Rev. 033 | PDF-Direct-Download & Auto-Filename</div>
         <div class="sig-container">
             <canvas id="sig-canvas" width="200" height="70"></canvas>
             <div class="sig-box">Unterschrift Mitarbeiter</div>
+            <button class="no-print" onclick="clearSig()" style="font-size: 8px; border: none; background: none; cursor: pointer; color: #c0392b; width: 100%;">Signatur löschen</button>
         </div>
     </div>
 </div>
@@ -123,16 +148,39 @@
     const tbody = document.getElementById('tableBody');
     let currentMonday = new Date();
 
+    // Funktion für den PDF Download via html2pdf
+    function downloadPDF() {
+        const element = document.getElementById('capture-area');
+        const name = document.getElementById('nameField').value || "Mitarbeiter";
+        const kw = document.getElementById('kwField').value || "00";
+        const filename = `Stundenzettel_KW${kw}_${name.replace(/\s+/g, '_')}.pdf`;
+
+        const opt = {
+            margin:       [10, 5, 10, 5],
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // UI-Elemente für den PDF-Snap ausblenden
+        const extras = document.querySelectorAll('.no-print, .btn-row-add, .btn-row-copy, .btn-row-del');
+        extras.forEach(el => el.style.visibility = 'hidden');
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            extras.forEach(el => el.style.visibility = 'visible');
+        });
+    }
+
     function updateTitle() {
         const name = document.getElementById('nameField').value || "Mitarbeiter";
         const kw = document.getElementById('kwField').value || "00";
-        // Wir setzen den Titel der Webseite direkt. Die meisten Browser nutzen diesen als Dateinamen beim PDF-Speichern.
         document.title = `Stundenzettel_KW${kw}_${name.replace(/\s+/g, '_')}`;
     }
 
     function setToMonday(date) {
         const day = date.getDay() || 7; 
-        if (day !== 1) date.setHours(-24 * (day - 1));
+        if (day !== 1) date.setDate(date.getDate() - (day - 1));
         date.setHours(0,0,0,0);
         return date;
     }
@@ -180,10 +228,13 @@
 
     function copyRow(btn) {
         const currentTr = btn.closest('tr');
-        const nextTr = currentTr.nextElementSibling;
+        const proj = currentTr.querySelector('.in-proj').value;
+        const task = currentTr.querySelector('.in-task').value;
+        let nextTr = currentTr.nextElementSibling;
+        
         if(nextTr) {
-            nextTr.querySelector('.in-proj').value = currentTr.querySelector('.in-proj').value;
-            nextTr.querySelector('.in-task').value = currentTr.querySelector('.in-task').value;
+            nextTr.querySelector('.in-proj').value = proj;
+            nextTr.querySelector('.in-task').value = task;
             saveAll();
         }
     }
@@ -213,8 +264,16 @@
     }
 
     function saveAll() {
-        const rows = []; document.querySelectorAll('#tableBody tr').forEach(tr => {
-            rows.push({ date: tr.querySelector('.date-wrapper span').textContent, proj: tr.querySelector('.in-proj').value, task: tr.querySelector('.in-task').value, std: tr.querySelector('.s-in').value, isWeekend: tr.classList.contains('weekend'), isExtra: !!tr.querySelector('.btn-row-del') });
+        const rows = []; 
+        document.querySelectorAll('#tableBody tr').forEach(tr => {
+            rows.push({ 
+                date: tr.querySelector('.date-wrapper span').textContent, 
+                proj: tr.querySelector('.in-proj').value, 
+                task: tr.querySelector('.in-task').value, 
+                std: tr.querySelector('.s-in').value, 
+                isWeekend: tr.classList.contains('weekend'), 
+                isExtra: !!tr.querySelector('.btn-row-del') 
+            });
         });
         localStorage.setItem('ks_full_markup', JSON.stringify(rows)); 
         localStorage.setItem('ks_name', document.getElementById('nameField').value); 
@@ -227,25 +286,45 @@
         document.getElementById('nameField').value = localStorage.getItem('ks_name') || ''; 
         document.getElementById('kwField').value = localStorage.getItem('ks_kw') || '';
         if(localStorage.getItem('ks_monday')) currentMonday = new Date(localStorage.getItem('ks_monday'));
-        tbody.innerHTML = ""; r.forEach(data => { addRow(data.date, null, data.isWeekend, data.isExtra); const tr = tbody.lastElementChild; tr.querySelector('.in-proj').value = data.proj; tr.querySelector('.in-task').value = data.task; tr.querySelector('.s-in').value = data.std; });
+        tbody.innerHTML = ""; 
+        r.forEach(data => { 
+            addRow(data.date, null, data.isWeekend, data.isExtra); 
+            const tr = tbody.lastElementChild; 
+            tr.querySelector('.in-proj').value = data.proj; 
+            tr.querySelector('.in-task').value = data.task; 
+            tr.querySelector('.s-in').value = data.std; 
+        });
         calc();
         updateTitle();
     }
 
     function removeRow(btn) { btn.closest('tr').remove(); calc(); saveAll(); }
-    function resetForm() { if(confirm("Daten löschen?")) { localStorage.clear(); location.reload(); } }
+    function resetForm() { if(confirm("Alle Daten löschen?")) { localStorage.clear(); location.reload(); } }
 
+    // Signatur Logik
     const canvas = document.getElementById('sig-canvas'), ctx = canvas.getContext('2d');
     let drawing = false; ctx.lineWidth = 2;
-    function getPos(e) { const r = canvas.getBoundingClientRect(); const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX; const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY; return { x: clientX - r.left, y: clientY - r.top }; }
+    function getPos(e) { 
+        const r = canvas.getBoundingClientRect(); 
+        const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX; 
+        const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY; 
+        return { x: clientX - r.left, y: clientY - r.top }; 
+    }
     canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
     canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
     window.addEventListener('mouseup', () => drawing = false);
     canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); }, {passive: false});
     canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }, {passive: false});
+    
+    function clearSig() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
     window.onload = () => { 
-        if (localStorage.getItem('ks_full_markup')) { loadAll(); } else { currentMonday = setToMonday(new Date()); changeWeek(0); } 
+        if (localStorage.getItem('ks_full_markup')) { 
+            loadAll(); 
+        } else { 
+            currentMonday = setToMonday(new Date()); 
+            changeWeek(0); 
+        } 
     };
 </script>
 </body>
